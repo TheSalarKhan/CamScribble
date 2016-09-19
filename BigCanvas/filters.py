@@ -25,25 +25,7 @@ class InkFilter:
 		:return: image after the filter has been applied.
 		"""
 
-		dst = frame;
-		binaryMask = self._retinaFilter.getFrame(frame);
-
-		
-
-		# extract the text area from the equalized image
-		dst = cv2.bitwise_and(dst,binaryMask)
-
-
-		# invert the acquired image
-		dst = 255 - dst
-
-
-		# wherever there was 0 now there is 255 so
-		# replace 255 with 0
-		dst[dst==255] = 0
-
-		
-		return dst
+		return self._retinaFilter.getFrame(frame);
 
 	def setAdaptiveFilterSize(self, val):
 		self._retinaFilter.setAdaptiveKernelSize(val);

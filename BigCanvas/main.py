@@ -108,8 +108,6 @@ class Canvas:
 		self.__x_offset = 0
 		self.__y_offset = 0
 
-
-
 		self.__currentFrameShape = (0,0)
 
 	def draw(self,img,borders=True):
@@ -128,7 +126,7 @@ class Canvas:
 		if(ret == False):
 			return False
 
-		cv2.imshow('original', cv2.resize(frame, (300, 300), interpolation=cv2.INTER_AREA))
+		cv2.imshow('camera input', cv2.resize(frame, (300, 300), interpolation=cv2.INTER_AREA))
 
 		# convert frame to gray scale
 		frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
@@ -200,7 +198,7 @@ class Canvas:
 			# exit safely
 			sys.exit(0)
 
-		# store the handle for the current frame in the object
+		# store the handle for the current frame shape in the object
 		# it is used when setting the x_offset and the y_offset,
 		# in the function self.setPosition()
 		self.__currentFrameShape = mask.shape
@@ -352,12 +350,6 @@ class BigPicture:
 
 		self.__undoStack.append(self.__bigPicture.copy())
 
-
-
-
-
-
-
 	def getNextFrame(self):
 		img = self.__bigPicture.copy()
 
@@ -481,6 +473,7 @@ def setup(cam,inkFilter,perspectiveCorrection):
 
 	# local function for letting the user select points
 	def selectFourPoints():
+		# The
 		_, img = cam.read()
 		_, img = cam.read()
 
@@ -542,14 +535,6 @@ def setup(cam,inkFilter,perspectiveCorrection):
 	cv2.namedWindow('internal controls')
 	cv2.createTrackbar('threshold', 'internal controls', 0, 255, threshChanged)
 	cv2.createTrackbar('adaptive filter', 'internal controls', 3, 25, aThreshChanged)
-
-	# cv2.createTrackbar('median', 'internal controls', 0, 30, medianChanged)
-	# cv2.createTrackbar('gaussian', 'internal controls', 0, 30, gaussianChanged)
-
-	# cv2.createTrackbar('clip limit', 'internal controls', 0, 255, clipLimit)
-	# cv2.createTrackbar('grid size', 'internal controls', 0, 50, tileGridSize)
-
-	# cv2.createTrackbar('BG thresh', 'internal controls', 0, 255, bgThreshold)
 
 
 # confiure the inkFilter object

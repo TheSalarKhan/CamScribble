@@ -30,6 +30,32 @@ class RetinaFilter:
 	def setBackgroundAveragingThreshold(self,val):
 		self._backgroundAverageThreshold = val;
 
+	def enhanceOutput(self,mask, originalImage):
+
+		# bitwise and the output from water shed and the
+		# gray scale image. Add a value of 1 to the grayscale image
+		# so that the darkest parts of ink which might be '0' in the
+		# actual image do not get removed in the next step.
+		ultimateOutput = cv2.bitwise_and(mask, originalImage + 1)
+
+		# invert the image, so that the lighter edges are darker
+		# and all the ink is bright.
+		ultimateOutput = 255 - ultimateOutput
+
+		# after the previous step all the background that was
+		# black is now maximum white, '255'. So lets turn it
+		# black again. This is the step where originalImage +1
+		# is saved from being removed from the image.
+		ultimateOutput[ultimateOutput == 255] = 0
+
+		maxIntensity = np.amax(ultimateOutput)
+
+		if(maxIntensity < 255):
+			ultimateOutput = ultimateOutput + (255 - maxIntensity)
+			ultimateOutput = cv2.bitwise_and(mask, ultimateOutput)
+
+		return ultimateOutput
+
 	def getFrame(self,img):
 
 		# convert to grayscale if not already
@@ -39,15 +65,18 @@ class RetinaFilter:
 		# apply gaussian blur.
 		img = cv2.GaussianBlur(img,(3,3),0)
 
+		# save the original for the enhancement phase
+		original = img.copy()
+
 		# apply adaptive thresholding
 		img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
             cv2.THRESH_BINARY,self._averageThreshGridSize,self._subtractFromMean) # these last two
 
 		# accumulate the frame
-		average = self._accumulator.getAverage(img);
+		average = self._accumulator.getAverage(img)
 
 		# threshold based on average frame values.
-		constant = np.zeros(average.shape,dtype=np.uint8);
-		constant[average < self._backgroundAverageThreshold] = 255;
+		constant = np.zeros(average.shape,dtype=np.uint8)
+		constant[average < self._backgroundAverageThreshold] = 255
 
-		return constant;
+		return self.enhanceOutput(constant,original)
