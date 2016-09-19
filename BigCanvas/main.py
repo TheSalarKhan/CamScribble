@@ -480,6 +480,7 @@ def setup(cam,inkFilter,perspectiveCorrection):
 		print "Please select 4 points, by double clicking on each of them in the order: \n"+"top left, top right, bottom left, bottom right."
 
 		while (pointIndex != 4):
+			_, img = cam.read()
 
 			cv2.imshow('select four corners', img)
 			key = cv2.waitKey(20) & 0xFF
@@ -517,6 +518,10 @@ def setup(cam,inkFilter,perspectiveCorrection):
 	def aThreshChanged(val):
 		application.filter.setAdaptiveFilterSize(val)
 
+
+	def intensityChanged(val):
+		application.filter.setDesiredIntensity(val)
+
 	# def medianChanged(val):
 	# 	application.filter.setMedianFilterSize(val)
 
@@ -535,6 +540,7 @@ def setup(cam,inkFilter,perspectiveCorrection):
 	cv2.namedWindow('internal controls')
 	cv2.createTrackbar('threshold', 'internal controls', 0, 255, threshChanged)
 	cv2.createTrackbar('adaptive filter', 'internal controls', 3, 25, aThreshChanged)
+	cv2.createTrackbar('Brightness', 'internal controls', 100, 255, intensityChanged)
 
 
 # confiure the inkFilter object

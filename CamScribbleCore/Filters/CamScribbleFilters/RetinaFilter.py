@@ -2,39 +2,49 @@ import cv2
 import numpy as np
 from ..BackgroundAveraging import RunningAverage
 
+
 class RetinaFilter:
 	"""
 		This is the filter which is responsible of taking in
 		the image from the perspective transform, and producing
 		the output with text as white and background as black.
 		It is called the retina filter because it removes random
-		noise from the image with the help of background averaging.
+		noise from the image with the help of background averaging,
+		which is somewhat similar to how the human eye works.
 	"""
 	def __init__(self,learningRate=0.4):
-		self._accumulator = RunningAverage(learningRate);
+		self._accumulator = RunningAverage(learningRate)
 
 		# parameters used for adaptive thresholding.
-		self._subtractFromMean = 6;
-		self._averageThreshGridSize = 13;
+		self._subtractFromMean = 6
+		self._averageThreshGridSize = 13
 
-		# parameters used for background averaging
-		self._backgroundAverageThreshold = 25;
+		# parameter used for background averaging
+		self._backgroundAverageThreshold = 25
+
+		# parameter used for the max intensity
+		# of the produced output.
+		self.__desiredMaxIntensity = 255
 
 	def setAdaptiveKernelSize(self,val):
 		if(val % 2 == 1 and val > 1):
-			self._averageThreshGridSize = val;
+			self._averageThreshGridSize = val
 
 	def setNoiseSupression(self,val):
-		self._subtractFromMean = val;
+		self._subtractFromMean = val
 
 	def setBackgroundAveragingThreshold(self,val):
-		self._backgroundAverageThreshold = val;
+		self._backgroundAverageThreshold = val
+
+	def setDesiredIntensity(self,val):
+		if(val >= 0 and val <= 255):
+			self.__desiredMaxIntensity = val
 
 	def enhanceOutput(self,mask, originalImage):
 
-		# bitwise and the output from water shed and the
-		# gray scale image. Add a value of 1 to the grayscale image
-		# so that the darkest parts of ink which might be '0' in the
+		# bitwise and the output from the filter and the
+		# original gray scale image. But add 1 to the grayscale image
+		# before the and so that the darkest parts of ink which might be '0' in the
 		# actual image do not get removed in the next step.
 		ultimateOutput = cv2.bitwise_and(mask, originalImage + 1)
 
@@ -48,11 +58,23 @@ class RetinaFilter:
 		# is saved from being removed from the image.
 		ultimateOutput[ultimateOutput == 255] = 0
 
+		# find the maximum intensity in the image
+		# if the maximum intensity is less than
+		# 255, add (255 - maxIntensity) to the
+		# whole image.
 		maxIntensity = np.amax(ultimateOutput)
 
-		if(maxIntensity < 255):
-			ultimateOutput = ultimateOutput + (255 - maxIntensity)
-			ultimateOutput = cv2.bitwise_and(mask, ultimateOutput)
+		toAdd = (self.__desiredMaxIntensity - maxIntensity)
+		ultimateOutput = ultimateOutput + toAdd
+
+		# there might be some negative values in the array
+		# after the previous step, so lets set all the -ve values
+		# to 0.
+		ultimateOutput[ultimateOutput < 0] = 0
+
+		ultimateOutput = ultimateOutput.astype(np.uint8)
+
+		ultimateOutput = cv2.bitwise_and(mask, ultimateOutput)
 
 		return ultimateOutput
 

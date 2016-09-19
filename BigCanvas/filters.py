@@ -4,6 +4,7 @@ import sys
 from CamScribbleCore.Filters.CamScribbleFilters.RetinaFilter import RetinaFilter
 from CamScribbleCore.Filters.PerspectiveCorrection import PerspectiveCorrection
 
+
 class InkFilter:
 	"""
 		This class is at the core of this project.
@@ -12,7 +13,7 @@ class InkFilter:
 		the ink.
 	"""
 	def __init__(self):
-		self._retinaFilter = RetinaFilter();
+		self._retinaFilter = RetinaFilter()
 
 
 	def applyFilter(self,frame):
@@ -24,14 +25,16 @@ class InkFilter:
 		:param frame: the image on which to apply the filter
 		:return: image after the filter has been applied.
 		"""
-
-		return self._retinaFilter.getFrame(frame);
+		return self._retinaFilter.getFrame(frame)
 
 	def setAdaptiveFilterSize(self, val):
-		self._retinaFilter.setAdaptiveKernelSize(val);
+		self._retinaFilter.setAdaptiveKernelSize(val)
 
 	def setAdaptiveFilterThreshold(self, val):
-		self._retinaFilter.setNoiseSupression(val);
+		self._retinaFilter.setNoiseSupression(val)
 
 	def setBackgroundAveragingRate(self, val):
-		self._retinaFilter.setBackgroundAveragingThreshold(val);
+		self._retinaFilter.setBackgroundAveragingThreshold(val)
+
+	def setDesiredIntensity(self,val):
+		self._retinaFilter.setDesiredIntensity(val)
