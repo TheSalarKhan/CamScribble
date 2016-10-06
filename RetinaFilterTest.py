@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from CamScribbleCore.Filters.CamScribbleFilters.RetinaFilter import RetinaFilter
 
-cap = cv2.VideoCapture(1);	
+cap = cv2.VideoCapture(0);	
 # lonAvg = BackgroundAveraging(0.4);
 myAverageFilter = RetinaFilter()
 

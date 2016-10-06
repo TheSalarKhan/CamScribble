@@ -10,7 +10,7 @@ from CamScribbleCore.Filters.PerspectiveCorrection import PerspectiveCorrection
 
 from pptx import Presentation
 
-CAMERA = 1
+CAMERA = 0
 
 
 def addSlide(image,name='output.pptx'):
