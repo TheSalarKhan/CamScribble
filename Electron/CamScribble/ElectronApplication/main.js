@@ -34,9 +34,3 @@ app.on('activate', () => {
         main();
     }
 });
-
-
-
-
-
-
