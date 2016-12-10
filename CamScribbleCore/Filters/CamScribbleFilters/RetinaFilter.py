@@ -94,11 +94,19 @@ class RetinaFilter:
 		img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
             cv2.THRESH_BINARY,self._averageThreshGridSize,self._subtractFromMean) # these last two
 
+		cv2.imshow('adaptiveThreshold',img);
+
 		# accumulate the frame
 		average = self._accumulator.getAverage(img)
+
+
+		cv2.imshow('averageFrame',average);
 
 		# threshold based on average frame values.
 		constant = np.zeros(average.shape,dtype=np.uint8)
 		constant[average < self._backgroundAverageThreshold] = 255
+
+
+		cv2.imshow('constant',constant);
 
 		return self.enhanceOutput(constant,original)

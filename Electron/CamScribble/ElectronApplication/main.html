@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="initial-scale=1"/>
+  <title>face-detection-node-opencv</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <div class="container center">
+    <canvas id="canvas-video" width="640" height="480"></canvas>
+  </div>
+
+
+  <!-- vertex shader -->
+  <script id="2d-vertex-shader" type="x-shader/x-vertex">
+    attribute vec2 a_position;
+    attribute vec2 a_texCoord;
+
+    uniform vec2 u_resolution;
+
+    varying vec2 v_texCoord;
+
+    void main() {
+      // convert the rectangle from pixels to 0.0 to 1.0
+      vec2 zeroToOne = a_position / u_resolution;
+
+      // convert from 0->1 to 0->2
+      vec2 zeroToTwo = zeroToOne * 2.0;
+
+      // convert from 0->2 to -1->+1 (clipspace)
+      vec2 clipSpace = zeroToTwo - 1.0;
+
+      gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+
+      // pass the texCoord to the fragment shader
+      // The GPU will interpolate this value between points.
+      v_texCoord = a_texCoord;
+    }
+  </script>
+  <!-- fragment shader -->
+  <script id="2d-fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+
+    // our texture
+    uniform sampler2D u_image;
+
+    // the texCoords passed in from the vertex shader.
+    varying vec2 v_texCoord;
+
+    void main() {
+      gl_FragColor = texture2D(u_image, v_texCoord);
+    }
+  </script>
+  <script src="webgl-utils.js"></script>
+  <script src="webgl-lessons-helper.js"></script>
+
+  <script>
+
+    var can = document.getElementById('canvas-video');
+    //var context = canvas.getContext('2d');
+
+    // show loading notice
+    //context.fillStyle = '#333';
+    //context.fillText('Loading...', canvas.width/2-30, canvas.height/3);
+
+    var texture = null;
+    var gl = null;
+    var canvas = null;
+    var program = null;
+    var positionBuffer = null;
+
+    var WebCam = require('./WebCam');
+    var myCam = new WebCam(0);
+    myCam.open();
+
+    initGLCanvas(can,640,480);
+
+    //gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,640,480,0,gl.RGBA,gl.UNSIGNED_BYTE,arr);
+
+
+
+
+    // setInterval(function() {
+
+    //   var blob = new Blob([myCam.read().toPngBuffer()]);
+
+    //   createImageBitmap(blob)
+    //   .then(imageBitmap => context.drawImage(imageBitmap,0,0));
+
+    // },1000/30);
+
+    //var clamped = new Uint8ClampedArray(new Uint8Array(640*480*4));
+
+    //var imagedata = new ImageData(clamped,640,480);
+
+    var buf = myCam.read();
+    
+    setInterval(function() {
+
+      //imageData.set();
+
+      buf = myCam.readIntoBuffer(buf);
+
+      renderUint8Array(gl,buf);
+
+      //imagedata = new ImageData(clamped,640,480);
+
+      //context.putImageData(imagedata,0,0);
+
+
+    }, 1000/60);
+
+
+    function renderUint8Array(gl,data) {
+
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,640,480,0,gl.RGB,gl.UNSIGNED_BYTE,data);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    }
+
+    // Loads a GLSL program for the context 'gl'.
+    function loadGLSLProgram(gl,vertexShaderId,fragmentShaderId) {
+      // setup GLSL program
+      var program = webglUtils.createProgramFromScripts(gl, [vertexShaderId, fragmentShaderId]);
+      // Tell it to use our program (pair of shaders)
+      gl.useProgram(program);
+
+      return program;
+    }
+
+    // assign data to positionBuffer and apply it to variable in program.
+    function assignAndBindBuffer(gl,positionBuffer, data, program,variable) {
+      // program,shader_variable,data
+      // Create a buffer to put three 2d clip space points in
+      // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      // Upload data to buffer
+      gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);
+      // look up where the vertex data needs to go.
+      var positionLocation = gl.getAttribLocation(program, variable);
+      // Turn on the position attribute
+      gl.enableVertexAttribArray(positionLocation);
+      // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+      var size = 2;          // 2 components per iteration
+      var type = gl.FLOAT;   // the data is 32bit floats
+      var normalize = false; // don't normalize the data
+      var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position, its used with interleaved data.
+      var offset = 0;        // start at the beginning of the buffer
+      gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset);
+    }
+
+
+    function updateBufferContents(gl,bufferId,data) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+      // Upload data to buffer
+      gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);
+    }
+
+    function initGLCanvas(canvas,width,height) {
+      // Get A WebGL context
+      //canvas = document.getElementById("canvas-video");
+      webglLessonsHelper.setupLesson(canvas);
+      gl = canvas.getContext("webgl");
+      if (!gl) {
+        webglLessonsHelper.showNeedWebGL(canvas);
+        return;
+      }
+
+      // Create a GLSL program object.
+      program = loadGLSLProgram(gl,"2d-vertex-shader","2d-fragment-shader");
+
+
+      // Assign the program a_position attribute data.
+      positionBuffer = gl.createBuffer();
+      var x1 = 0;
+      var x2 = width;
+      var y1 = 0;
+      var y2 = height;
+      var data = new Float32Array([
+        x1, y1,
+        x2, y1,
+        x1, y2,
+        x1, y2,
+        x2, y1,
+        x2, y2,
+      ]);
+      assignAndBindBuffer(gl,positionBuffer,data,program,"a_position");
+
+
+      // Assign the program a_texCoord attribute data.
+      var texcoordBuffer = gl.createBuffer();
+      data = new Float32Array([
+          0.0,  0.0,
+          1.0,  0.0,
+          0.0,  1.0,
+          0.0,  1.0,
+          1.0,  0.0,
+          1.0,  1.0,
+      ]);
+      assignAndBindBuffer(gl,texcoordBuffer,data,program,"a_texCoord");
+      
+
+      // Create a texture, set it as current.
+      texture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      
+
+
+
+
+      
+
+      
+
+      
+
+      // resize canvas.
+      webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+
+      // Tell WebGL how to convert from clip space to pixels
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+
+      // set the resolution
+      gl.uniform2f(gl.getUniformLocation(program, "u_resolution"), gl.canvas.width, gl.canvas.height);
+
+
+      // Clear the canvas
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+
+      /*/ Draw the rectangle.
+      var primitiveType = gl.TRIANGLES;
+      var offset = 0;
+      var count = 6;
+      gl.drawArrays(primitiveType, offset, count);*/
+
+
+      // gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+    
+  </script>
+</body>
+</html>
