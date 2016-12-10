@@ -92,7 +92,7 @@ function initializeProgramInputs(canvas,gl,program) {
 
 
   // resize canvas.
-  // webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+  Helpers.resizeCanvasToDisplaySize(gl.canvas);
 
   // Tell WebGL how to convert from clip space to pixels,
   // and set the 'u_resolution' uniform.
@@ -141,7 +141,7 @@ Helpers = {
     gl.vertexAttribPointer(variableLocation, size, type, normalize, stride, offset);
   },
 
-  renderUint8Array: function(gl,data) {
+  renderUint8Array: function(gl,data,width,height) {
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,640,480,0,gl.RGB,gl.UNSIGNED_BYTE,data);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   },
@@ -220,12 +220,23 @@ Helpers = {
       }
     }
   },
+
+  resizeCanvasToDisplaySize: function(canvas, multiplier) {
+    multiplier = multiplier || 1;
+    var width  = canvas.clientWidth  * multiplier | 0;
+    var height = canvas.clientHeight * multiplier | 0;
+    if (canvas.width !== width ||  canvas.height !== height) {
+      canvas.width  = width;
+      canvas.height = height;
+      return true;
+    }
+    return false;
+  },
 }
 
 
 
 function GlCanvasForDummies(canvasObject,width,height) {
-
   this.gl = initGLCanvas(canvasObject,width,height);
 
 }
@@ -233,8 +244,8 @@ function GlCanvasForDummies(canvasObject,width,height) {
 /**
   This function will render an RGB24 format buffer 'data', to the canvas.
 */
-GlCanvasForDummies.prototype.renderImage = function(data) {
-  Helpers.renderUint8Array(this.gl,data);
+GlCanvasForDummies.prototype.renderImage = function(data,width,height) {
+  Helpers.renderUint8Array(this.gl,data,width,height);
 }
 
 

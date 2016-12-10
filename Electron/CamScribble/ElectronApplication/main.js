@@ -1,20 +1,28 @@
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow} = require('electron');
+const CamScribble = require('cam_scribble').CamScribble;
 
 let win
 
 function main() {
-    win = new BrowserWindow({
-        width:640,
-        height:480
-    });
 
-    win.loadURL(`file://${__dirname}/main.html`);
 
-    win.webContents.openDevTools();
+  win = new BrowserWindow({
+      width:800,
+      height:800,
+      titleBarStyle: 'hidden',
+      resizable: true
+  });
 
-    win.on('closed',() => {
-        win = null;
-    });
+
+  win.loadURL(`file://${__dirname}/main.html`);
+
+  win.setMenu(null);
+
+  win.webContents.openDevTools();
+
+  win.on('closed',() => {
+      win = null;
+  });
 }
 
 
