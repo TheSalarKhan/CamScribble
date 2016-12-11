@@ -1,4 +1,4 @@
-const {app, BrowserWindow} = require('electron');
+const {app, BrowserWindow,ipcMain} = require('electron');
 const CamScribble = require('cam_scribble').CamScribble;
 
 let win
@@ -42,3 +42,10 @@ app.on('activate', () => {
         main();
     }
 });
+
+
+
+ipcMain.on('a-message', (event, arg) => {
+  console.log(arg)  // prints "ping"
+  //event.returnValue = 'pong'
+})

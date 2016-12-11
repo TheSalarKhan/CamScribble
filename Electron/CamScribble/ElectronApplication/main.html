@@ -1,19 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script src="js/d3.js"></script>
+  <style>
+   /* body {
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      z-index: 0;
+      margin: 0px;
+    }*/
+/*
+    canvas {
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      z-index: -1;
+    }
+*/
+
+    
+
+  /*  svg {
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      z-index: 2;
+    }*/
+
+    #container {
+      position:relative;
+      width:800px;
+      height:800px;
+    }
+
+    #container * {
+      position:absolute;
+      top:0px;
+      left:0px;
+    }
+
+    
+
+    .active {
+      stroke: #000;
+      stroke-width: 2px;
+    }
+
+
+
+  </style>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
+  <div id='container'>
+    <canvas id="canvas"></canvas>
+    <svg id="dragabbles" width="100%" height="100%"></svg>
+  </div>
+  
+  
 
   <script>
     //const remote = require('electron').remote;
     //const camScribble = remote.getGlobal('camScribble');
-    const GlCanvasForDummies = require('./GlCanvasForDummies');
+    const GlCanvasForDummies = require('./js/GlCanvasForDummies');
     const CamScribble = require('cam_scribble').CamScribble;
+    const {ipcRenderer} = require('electron');
 
     var camScribble = new CamScribble([800,800],[0,0,0]);
 
-    camScribble.setCamera(0);
+    camScribble.setCamera(1);
 
     var can = document.getElementById('canvas');
 
@@ -32,7 +93,68 @@
         },1000/15);
     }
 
+    ipcRenderer.send('a-message','hahah');
     renderLoop();
+
+
+
+    function setDraggables(width,height) {
+
+
+      var svg = d3.select("svg"),
+        radius = 15;
+
+      var circles = [
+      {x: 0.25 * width, y: 0.25 * height, color: '#ff0000', name: 'topLeft'},
+      {x: 0.75 * width, y: 0.25 * height, color: '#00ff00', name: 'topRight'},
+      {x: 0.25 * width, y: 0.75 * height, color: '#0000ff', name: 'bottomLeft'},
+      {x: 0.75 * width, y: 0.75 * height, color: '#000000', name: 'bottomright'}
+      ];
+
+      
+
+      var elem = svg.selectAll("circle")
+        .data(circles)
+        .enter().append("circle")
+          .attr("cx", function(d) { return d.x; })
+          .attr("cy", function(d) { return d.y; })
+          .attr("r", radius)
+          .style("fill", function(d, i) { return d.color; })
+          .call(d3.drag()
+              .on("start", dragstarted)
+              .on("drag", dragged)
+              .on("end", dragended))
+          .append("text")
+            .attr("dx", function(d){return -20})
+            .text(function(d){return d.name});
+
+      function dragstarted(d) {
+        d3.select(this).raise().classed("active", true);
+      }
+
+      function dragged(d) {
+        if( d3.event.x >=0 && 
+            d3.event.y >= 0 && 
+            d3.event.x <= width && 
+            d3.event.y <= height) {
+          d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+        }
+      }
+
+      function dragended(d) {
+        d3.select(this).classed("active", false);
+        console.log(d.name+': '+d.x/width+','+d.y/height);
+      }
+    }
+
+
+    setDraggables(800,800);
+
+
+    // document.getElementById('dragabbles').setAttribute("style","width:800px");
+    // document.getElementById('dragabbles').setAttribute("style","height:800px");
+
+
 
   </script>
 </body>
