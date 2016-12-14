@@ -20,6 +20,7 @@ void RunningAverage::getAverage(Mat& inputImage,Mat& outputImage){
 	inputImage.convertTo(_avg,CV_32FC3, 1/255.0);
   } else {
 	accumulateWeighted(inputImage, _avg, _threshold);
+  
   }
 
   convertScaleAbs(_avg, outputImage);

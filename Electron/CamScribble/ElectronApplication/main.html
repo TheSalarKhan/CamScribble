@@ -66,8 +66,6 @@
   
 
   <script>
-    //const remote = require('electron').remote;
-    //const camScribble = remote.getGlobal('camScribble');
     const GlCanvasForDummies = require('./js/GlCanvasForDummies');
     const CamScribble = require('cam_scribble').CamScribble;
     const {ipcRenderer} = require('electron');
@@ -86,7 +84,7 @@
       buf = camScribble.getCameraFrame(buf);
       glCan.renderImage(buf,640,480);
 
-
+      // Call renderLoop again after 1/15th of a second
       setTimeout(
         function() {
           requestAnimationFrame(renderLoop)

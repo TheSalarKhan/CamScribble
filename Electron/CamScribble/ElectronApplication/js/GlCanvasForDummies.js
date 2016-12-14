@@ -238,7 +238,6 @@ Helpers = {
 
 function GlCanvasForDummies(canvasObject,width,height) {
   this.gl = initGLCanvas(canvasObject,width,height);
-
 }
 
 /**
