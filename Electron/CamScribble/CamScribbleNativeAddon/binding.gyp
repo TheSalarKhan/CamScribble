@@ -9,7 +9,8 @@
         "src/CamScribbleWrap.cc",
         "src/PerspectiveCorrection.cc",
         "src/RetinaFilter.cc",
-        "src/RunningAverage.cc"
+        "src/RunningAverage.cc",
+        "src/Matrix.cc"
         ],
 	
 	"include_dirs": [

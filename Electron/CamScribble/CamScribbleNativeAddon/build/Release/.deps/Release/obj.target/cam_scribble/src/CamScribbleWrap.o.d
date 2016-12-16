@@ -67,7 +67,7 @@ Release/obj.target/cam_scribble/src/CamScribbleWrap.o: \
  /usr/local/lib/node_modules/nan/nan_object_wrap.h \
  /usr/local/lib/node_modules/nan/nan_typedarray_contents.h \
  ../src/BigCanvas.h ../src/RetinaFilter.h ../src/PerspectiveCorrection.h \
- ../src/RunningAverage.h
+ ../src/RunningAverage.h ../src/Matrix.h
 ../src/CamScribbleWrap.cc:
 ../src/CamScribbleWrap.h:
 ../src/OpenCV.h:
@@ -140,3 +140,4 @@ Release/obj.target/cam_scribble/src/CamScribbleWrap.o: \
 ../src/RetinaFilter.h:
 ../src/PerspectiveCorrection.h:
 ../src/RunningAverage.h:
+../src/Matrix.h:

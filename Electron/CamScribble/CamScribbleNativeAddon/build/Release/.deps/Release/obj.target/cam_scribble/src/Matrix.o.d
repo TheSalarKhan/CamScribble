@@ -1,5 +1,5 @@
-cmd_Release/obj.target/cam_scribble/src/init.o := g++ '-DNODE_GYP_MODULE_NAME=cam_scribble' '-D_LARGEFILE_SOURCE' '-D_FILE_OFFSET_BITS=64' '-DBUILDING_NODE_EXTENSION' -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/include/node -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include -I/home/salar/OpenCV/opencv-3.1.0/output_lib/include -I/usr/local/include -I/usr/local/lib/node_modules/nan  -fPIC -pthread -Wall -Wextra -Wno-unused-parameter -m64 -O3 -fno-omit-frame-pointer -std=gnu++0x -MMD -MF ./Release/.deps/Release/obj.target/cam_scribble/src/init.o.d.raw   -c -o Release/obj.target/cam_scribble/src/init.o ../src/init.cc
-Release/obj.target/cam_scribble/src/init.o: ../src/init.cc \
+cmd_Release/obj.target/cam_scribble/src/Matrix.o := g++ '-DNODE_GYP_MODULE_NAME=cam_scribble' '-D_LARGEFILE_SOURCE' '-D_FILE_OFFSET_BITS=64' '-DBUILDING_NODE_EXTENSION' -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/include/node -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include -I/home/salar/OpenCV/opencv-3.1.0/output_lib/include -I/usr/local/include -I/usr/local/lib/node_modules/nan  -fPIC -pthread -Wall -Wextra -Wno-unused-parameter -m64 -O3 -fno-omit-frame-pointer -std=gnu++0x -MMD -MF ./Release/.deps/Release/obj.target/cam_scribble/src/Matrix.o.d.raw   -c -o Release/obj.target/cam_scribble/src/Matrix.o ../src/Matrix.cc
+Release/obj.target/cam_scribble/src/Matrix.o: ../src/Matrix.cc \
  ../src/OpenCV.h \
  /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8.h \
  /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8-version.h \
@@ -66,10 +66,8 @@ Release/obj.target/cam_scribble/src/init.o: ../src/init.cc \
  /usr/local/lib/node_modules/nan/nan_weak.h \
  /usr/local/lib/node_modules/nan/nan_object_wrap.h \
  /usr/local/lib/node_modules/nan/nan_typedarray_contents.h \
- ../src/VideoCaptureWrap.h ../src/CamScribbleWrap.h ../src/BigCanvas.h \
- ../src/RetinaFilter.h ../src/PerspectiveCorrection.h \
- ../src/RunningAverage.h ../src/Matrix.h
-../src/init.cc:
+ ../src/Matrix.h
+../src/Matrix.cc:
 ../src/OpenCV.h:
 /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8.h:
 /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8-version.h:
@@ -136,10 +134,4 @@ Release/obj.target/cam_scribble/src/init.o: ../src/init.cc \
 /usr/local/lib/node_modules/nan/nan_weak.h:
 /usr/local/lib/node_modules/nan/nan_object_wrap.h:
 /usr/local/lib/node_modules/nan/nan_typedarray_contents.h:
-../src/VideoCaptureWrap.h:
-../src/CamScribbleWrap.h:
-../src/BigCanvas.h:
-../src/RetinaFilter.h:
-../src/PerspectiveCorrection.h:
-../src/RunningAverage.h:
 ../src/Matrix.h:

@@ -1,4 +1,5 @@
 #include "CamScribbleWrap.h"
+#include "Matrix.h"
 #include <vector>
 
 Nan::Persistent<FunctionTemplate> CamScribbleWrap::constructor;
@@ -27,10 +28,9 @@ void CamScribbleWrap::Init(Local<Object> target) {
   Nan::SetPrototypeMethod(ctor,"exportAsImage",ExportAsImage);
 
   Nan::SetPrototypeMethod(ctor,"setCamera",SetCamera);
-  Nan::SetPrototypeMethod(ctor,"getNewFrame",GetNewFrame);
+  
   Nan::SetPrototypeMethod(ctor,"getFrame",GetFrame);
 
-  Nan::SetPrototypeMethod(ctor,"getNewCameraFrame",GetNewCameraFrame);
   Nan::SetPrototypeMethod(ctor,"getCameraFrame",GetCameraFrame);
 
 
@@ -78,7 +78,8 @@ NAN_METHOD(CamScribbleWrap::New) {
   int b = backgroundColor->Get(2)->IntegerValue();
 
 
-  CamScribbleWrap *v = new CamScribbleWrap(cv::Size(width,height),cv::Scalar(r,g,b));
+  CamScribbleWrap *v = 
+  	new CamScribbleWrap(cv::Size(width,height),cv::Scalar(r,g,b));
 
   v->Wrap(info.This());
 
@@ -324,51 +325,6 @@ NAN_METHOD(CamScribbleWrap::GetAvailableCameras) {
   info.GetReturnValue().Set(Integer::New(info.GetIsolate(),count));
 }
 
-NAN_METHOD(CamScribbleWrap::GetNewFrame) {
-  Nan::HandleScope scope;
-  CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
-
-  if(self->cameraIndex == -1) {
-    info.GetReturnValue().Set(Null(info.GetIsolate()));
-    return Nan::ThrowError("Error! cannot get frame without camera input. \nPlease call '.setCamera()' with an appropriate cam id before calling this function again.");
-  }
-
-  // read a frame from the camera
-  self->camera.read(self->cameraImage);
-
-  // pass it through the bigCanvas pipeline, and
-  // convert it to RGB format.
-  self->canvas.getFrame(self->cameraImage, self->outputImage);
-  cv::cvtColor(self->outputImage,self->outputImage,CV_BGR2RGB);
-
-  // calculate the size of the image.
-  int sizeOfImage = self->outputImage.rows*self->outputImage.cols*3;
-
-  // create a buffer to hold the image data.
-  Local < Object > buf = Nan::NewBuffer(sizeOfImage).ToLocalChecked();
-
-  // copy data from image to buffer.
-  memcpy((uchar*) Buffer::Data(buf), self->outputImage.data, sizeOfImage);
-
-
-  // get global context of app.
-  v8::Local < v8::Object > globalObj = Nan::GetCurrentContext()->Global();
-
-  // get handle to the node's Buffer object's constructor
-  v8::Local < v8::Function > bufferConstructor =
-    v8::Local<v8::Function>::Cast(globalObj->Get(Nan::New<v8::String>("Buffer").ToLocalChecked()));
-
-  // create arguments for the buffer object.
-  v8::Local<v8::Value> constructorArgs[3] = {buf, Nan::New<v8::Integer>((unsigned)sizeOfImage), Nan::New<v8::Integer>(0)};
-
-  // instantiate the buffer object.
-  v8::Local < v8::Object > actualBuffer = bufferConstructor->NewInstance(3,constructorArgs);
-
-  // return the buffer object.
-  info.GetReturnValue().Set(actualBuffer);
-
-
-}
 
 NAN_METHOD(CamScribbleWrap::GetFrame) {
   Nan::HandleScope scope;
@@ -379,59 +335,57 @@ NAN_METHOD(CamScribbleWrap::GetFrame) {
     return Nan::ThrowError("Error! cannot get frame without camera input. \nPlease call '.setCamera()' with an appropriate cam id before calling this function again.");
   }
 
-  if(info.Length() != 1) {
-    return Nan::ThrowError("Error! This function takes in only one argument - previously recieved buffer from readNewFrame");
-  }
 
   // read a frame from the camera
   self->camera.read(self->cameraImage);
 
   // pass it through the bigCanvas pipeline, and
-  // convert it ti RGB format.
+  // convert it to RGB format.
   self->canvas.getFrame(self->cameraImage, self->outputImage);
   cv::cvtColor(self->outputImage,self->outputImage,CV_BGR2RGB);
 
 
-  // calculate the size of the image.
-  int sizeOfImage = self->outputImage.rows*self->outputImage.cols*3;
+  if(info.Length() != 1) {
 
-  // unwrap the passed buffer.
-  v8::Local < v8::Object > buf =  info[0]->ToObject();
+    Local<Object> toReturn = 
+      Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
 
-  // copy data from image to buffer.
-  memcpy((uchar*) Buffer::Data(buf), self->outputImage.data, sizeOfImage);
+    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
 
+    img->mat = self->outputImage;
 
-  // return the buffer object.
-  info.GetReturnValue().Set(buf);
-}
+    info.GetReturnValue().Set(toReturn);
 
-
-
-
-NAN_METHOD(CamScribbleWrap::GetNewCameraFrame) {
-  Nan::HandleScope scope;
-  CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
-
-  if(self->cameraIndex == -1) {
-    info.GetReturnValue().Set(Null(info.GetIsolate()));
-    return Nan::ThrowError("Error! cannot get frame without camera input. \nPlease call '.setCamera()' with an appropriate cam id before calling this function again.");
+    return;
   }
 
-  // read a frame from the camera
-  self->camera.read(self->cameraImage);
+  Local<Object> passed = info[0]->ToObject();
+  Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(passed);
 
-  // convert to RGB
-  cv::cvtColor(self->cameraImage,self->cameraImage,CV_BGR2RGB);
+  img->mat = self->outputImage;
 
-  // calculate the size of the image.
-  int sizeOfImage = self->cameraImage.rows*self->cameraImage.cols*3;
+  info.GetReturnValue().Set(passed);
 
+
+  /*// calculate the size of the image.
+  int sizeOfImage = self->outputImage.rows*self->outputImage.cols*3;
+  
+  // If a buffer has already been passed, just write to that buffer, and return.
+  if(info.Length() == 1) {
+	// unwrap the passed buffer.
+	// copy data from image to buffer.
+	// return the buffer object.
+	v8::Local < v8::Object > buf =  info[0]->ToObject();
+	memcpy((uchar*) Buffer::Data(buf), self->outputImage.data, sizeOfImage);
+	info.GetReturnValue().Set(buf);
+	return;
+  }
+  
   // create a buffer to hold the image data.
   Local < Object > buf = Nan::NewBuffer(sizeOfImage).ToLocalChecked();
 
   // copy data from image to buffer.
-  memcpy((uchar*) Buffer::Data(buf), self->cameraImage.data, sizeOfImage);
+  memcpy((uchar*) Buffer::Data(buf), self->outputImage.data, sizeOfImage);
 
 
   // get global context of app.
@@ -448,10 +402,12 @@ NAN_METHOD(CamScribbleWrap::GetNewCameraFrame) {
   v8::Local < v8::Object > actualBuffer = bufferConstructor->NewInstance(3,constructorArgs);
 
   // return the buffer object.
-  info.GetReturnValue().Set(actualBuffer);
-
-
+  info.GetReturnValue().Set(actualBuffer);*/
 }
+
+
+
+
 
 NAN_METHOD(CamScribbleWrap::GetCameraFrame) {
   Nan::HandleScope scope;
@@ -462,27 +418,31 @@ NAN_METHOD(CamScribbleWrap::GetCameraFrame) {
     return Nan::ThrowError("Error! cannot get frame without camera input. \nPlease call '.setCamera()' with an appropriate cam id before calling this function again.");
   }
 
-  if(info.Length() != 1) {
-    return Nan::ThrowError("Error! This function takes in only one argument - previously recieved buffer from readNewCameraFrame");
-  }
-
   // read a frame from the camera
   self->camera.read(self->cameraImage);
 
   // convert to RGB
   cv::cvtColor(self->cameraImage,self->cameraImage,CV_BGR2RGB);
 
+  if(info.Length() != 1) {
 
-  // calculate the size of the image.
-  int sizeOfImage = self->cameraImage.rows*self->cameraImage.cols*3;
+    Local<Object> toReturn = 
+      Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
 
-  // unwrap the passed buffer.
-  v8::Local < v8::Object > buf =  info[0]->ToObject();
+    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
 
-  // copy data from image to buffer.
-  memcpy((uchar*) Buffer::Data(buf), self->cameraImage.data, sizeOfImage);
+    img->mat = self->cameraImage;
 
+    info.GetReturnValue().Set(toReturn);
 
-  // return the buffer object.
-  info.GetReturnValue().Set(buf);
+    return;
+  }
+
+  Local<Object> passed = info[0]->ToObject();
+  Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(passed);
+
+  img->mat = self->cameraImage;
+
+  info.GetReturnValue().Set(passed);
+
 }

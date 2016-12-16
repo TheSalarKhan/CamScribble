@@ -4,8 +4,10 @@
 class CamScribbleWrap: public Nan::ObjectWrap {
 public:
   cv::VideoCapture camera;
+  
   cv::Mat cameraImage;
   cv::Mat outputImage;
+  
   BigCanvas canvas;
   int cameraIndex;
 

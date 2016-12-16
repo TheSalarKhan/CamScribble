@@ -78,17 +78,21 @@
 
     var glCan = new GlCanvasForDummies(can,800,800);
 
-    var buf = camScribble.getNewCameraFrame();
+    var image = camScribble.getCameraFrame();
+    var buf = image.toBuffer();
 
     function renderLoop() {
-      buf = camScribble.getCameraFrame(buf);
+      image = camScribble.getCameraFrame(image);
+      buf = image.toBuffer(buf);
+
+
       glCan.renderImage(buf,640,480);
 
       // Call renderLoop again after 1/15th of a second
       setTimeout(
         function() {
           requestAnimationFrame(renderLoop)
-        },1000/15);
+        },1000/30);
     }
 
     ipcRenderer.send('a-message','hahah');

@@ -1,6 +1,7 @@
 #include "OpenCV.h"
 #include "VideoCaptureWrap.h"
 #include "CamScribbleWrap.h"
+#include "Matrix.h"
 
 extern "C" void init(Local<Object> target) {
   Nan::HandleScope scope;
@@ -8,6 +9,7 @@ extern "C" void init(Local<Object> target) {
 
   VideoCaptureWrap::Init(target);
   CamScribbleWrap::Init(target);
+  Matrix::Init(target);
 
 };
 
