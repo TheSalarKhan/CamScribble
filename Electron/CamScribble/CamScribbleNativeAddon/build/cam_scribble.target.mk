@@ -4,9 +4,6 @@ TOOLSET := target
 TARGET := cam_scribble
 DEFS_Debug := \
 	'-DNODE_GYP_MODULE_NAME=cam_scribble' \
-	'-DUSING_UV_SHARED=1' \
-	'-DUSING_V8_SHARED=1' \
-	'-DV8_DEPRECATION_WARNINGS=1' \
 	'-D_LARGEFILE_SOURCE' \
 	'-D_FILE_OFFSET_BITS=64' \
 	'-DBUILDING_NODE_EXTENSION' \
@@ -32,18 +29,16 @@ CFLAGS_CC_Debug := \
 	-std=gnu++0x
 
 INCS_Debug := \
-	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/include/node \
-	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src \
-	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include \
-	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include \
-	-I$(srcdir)/-I/usr/local/include/opencv -I/usr/local/include \
-	-I/usr/lib/node_modules/nan
+	-I/usr/include/nodejs/include/node \
+	-I/usr/include/nodejs/src \
+	-I/usr/include/nodejs/deps/uv/include \
+	-I/usr/include/nodejs/deps/v8/include \
+	-I/home/salar/OpenCV/opencv-3.1.0/output_lib/include \
+	-I/usr/local/include \
+	-I/usr/local/lib/node_modules/nan
 
 DEFS_Release := \
 	'-DNODE_GYP_MODULE_NAME=cam_scribble' \
-	'-DUSING_UV_SHARED=1' \
-	'-DUSING_V8_SHARED=1' \
-	'-DV8_DEPRECATION_WARNINGS=1' \
 	'-D_LARGEFILE_SOURCE' \
 	'-D_FILE_OFFSET_BITS=64' \
 	'-DBUILDING_NODE_EXTENSION'
@@ -57,6 +52,8 @@ CFLAGS_Release := \
 	-Wno-unused-parameter \
 	-m64 \
 	-O3 \
+	-ffunction-sections \
+	-fdata-sections \
 	-fno-omit-frame-pointer
 
 # Flags passed to only C files.
@@ -67,12 +64,13 @@ CFLAGS_CC_Release := \
 	-std=gnu++0x
 
 INCS_Release := \
-	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/include/node \
-	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src \
-	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include \
-	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include \
-	-I$(srcdir)/-I/usr/local/include/opencv -I/usr/local/include \
-	-I/usr/lib/node_modules/nan
+	-I/usr/include/nodejs/include/node \
+	-I/usr/include/nodejs/src \
+	-I/usr/include/nodejs/deps/uv/include \
+	-I/usr/include/nodejs/deps/v8/include \
+	-I/home/salar/OpenCV/opencv-3.1.0/output_lib/include \
+	-I/usr/local/include \
+	-I/usr/local/lib/node_modules/nan
 
 OBJS := \
 	$(obj).target/$(TARGET)/src/init.o \
@@ -110,15 +108,21 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 LDFLAGS_Debug := \
 	-pthread \
 	-rdynamic \
-	-m64
+	-m64 \
+	-L/home/salar/OpenCV/opencv-3.1.0/output_lib/lib
 
 LDFLAGS_Release := \
 	-pthread \
 	-rdynamic \
-	-m64
+	-m64 \
+	-L/home/salar/OpenCV/opencv-3.1.0/output_lib/lib
 
 LIBS := \
-	-L/usr/local/lib -lopencv_shape -lopencv_stitching -lopencv_objdetect -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_video -lopencv_photo -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_viz -lopencv_core
+	-lopencv_core \
+	-lopencv_highgui \
+	-lopencv_videoio \
+	-lopencv_imgcodecs \
+	-lopencv_video
 
 $(obj).target/cam_scribble.node: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))
 $(obj).target/cam_scribble.node: LIBS := $(LIBS)
