@@ -39,8 +39,9 @@
     "v8_random_seed": 0,
     "v8_use_snapshot": "true",
     "want_separate_host_toolset": 0,
-    "nodedir": "/usr/include/nodejs",
+    "nodedir": "/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4",
     "copy_dev_lib": "true",
-    "standalone_static_library": 1
+    "standalone_static_library": 1,
+    "target": "1.4.4"
   }
 }

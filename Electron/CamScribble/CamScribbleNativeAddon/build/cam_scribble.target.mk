@@ -29,10 +29,10 @@ CFLAGS_CC_Debug := \
 	-std=gnu++0x
 
 INCS_Debug := \
-	-I/usr/include/nodejs/include/node \
-	-I/usr/include/nodejs/src \
-	-I/usr/include/nodejs/deps/uv/include \
-	-I/usr/include/nodejs/deps/v8/include \
+	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/include/node \
+	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src \
+	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include \
+	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include \
 	-I/home/salar/OpenCV/opencv-3.1.0/output_lib/include \
 	-I/usr/local/include \
 	-I/usr/local/lib/node_modules/nan
@@ -52,8 +52,6 @@ CFLAGS_Release := \
 	-Wno-unused-parameter \
 	-m64 \
 	-O3 \
-	-ffunction-sections \
-	-fdata-sections \
 	-fno-omit-frame-pointer
 
 # Flags passed to only C files.
@@ -64,10 +62,10 @@ CFLAGS_CC_Release := \
 	-std=gnu++0x
 
 INCS_Release := \
-	-I/usr/include/nodejs/include/node \
-	-I/usr/include/nodejs/src \
-	-I/usr/include/nodejs/deps/uv/include \
-	-I/usr/include/nodejs/deps/v8/include \
+	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/include/node \
+	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src \
+	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include \
+	-I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include \
 	-I/home/salar/OpenCV/opencv-3.1.0/output_lib/include \
 	-I/usr/local/include \
 	-I/usr/local/lib/node_modules/nan

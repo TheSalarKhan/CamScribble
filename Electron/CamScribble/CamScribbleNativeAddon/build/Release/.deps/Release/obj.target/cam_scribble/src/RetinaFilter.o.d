@@ -1,13 +1,15 @@
-cmd_Release/obj.target/cam_scribble/src/RetinaFilter.o := g++ '-DNODE_GYP_MODULE_NAME=cam_scribble' '-D_LARGEFILE_SOURCE' '-D_FILE_OFFSET_BITS=64' '-DBUILDING_NODE_EXTENSION' -I/usr/include/nodejs/include/node -I/usr/include/nodejs/src -I/usr/include/nodejs/deps/uv/include -I/usr/include/nodejs/deps/v8/include -I/home/salar/OpenCV/opencv-3.1.0/output_lib/include -I/usr/local/include -I/usr/local/lib/node_modules/nan  -fPIC -pthread -Wall -Wextra -Wno-unused-parameter -m64 -O3 -ffunction-sections -fdata-sections -fno-omit-frame-pointer -std=gnu++0x -MMD -MF ./Release/.deps/Release/obj.target/cam_scribble/src/RetinaFilter.o.d.raw   -c -o Release/obj.target/cam_scribble/src/RetinaFilter.o ../src/RetinaFilter.cc
+cmd_Release/obj.target/cam_scribble/src/RetinaFilter.o := g++ '-DNODE_GYP_MODULE_NAME=cam_scribble' '-D_LARGEFILE_SOURCE' '-D_FILE_OFFSET_BITS=64' '-DBUILDING_NODE_EXTENSION' -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/include/node -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include -I/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include -I/home/salar/OpenCV/opencv-3.1.0/output_lib/include -I/usr/local/include -I/usr/local/lib/node_modules/nan  -fPIC -pthread -Wall -Wextra -Wno-unused-parameter -m64 -O3 -fno-omit-frame-pointer -std=gnu++0x -MMD -MF ./Release/.deps/Release/obj.target/cam_scribble/src/RetinaFilter.o.d.raw   -c -o Release/obj.target/cam_scribble/src/RetinaFilter.o ../src/RetinaFilter.cc
 Release/obj.target/cam_scribble/src/RetinaFilter.o: \
  ../src/RetinaFilter.cc ../src/RetinaFilter.h ../src/OpenCV.h \
- /usr/include/nodejs/deps/v8/include/v8.h \
- /usr/include/nodejs/deps/v8/include/v8-version.h \
- /usr/include/nodejs/deps/v8/include/v8config.h \
- /usr/include/nodejs/src/node.h /usr/include/nodejs/src/node_version.h \
- /usr/include/nodejs/src/node_object_wrap.h \
- /usr/include/nodejs/src/node_version.h \
- /usr/include/nodejs/src/node_buffer.h /usr/include/nodejs/src/node.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8-version.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8config.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node_version.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node_object_wrap.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node_version.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node_buffer.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node.h \
  /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv/cv.h \
  /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv2/core/core_c.h \
  /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv2/core/types_c.h \
@@ -47,12 +49,12 @@ Release/obj.target/cam_scribble/src/RetinaFilter.o: \
  /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv2/imgproc.hpp \
  /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv2/opencv_modules.hpp \
  /usr/local/lib/node_modules/nan/nan.h \
- /usr/include/nodejs/deps/uv/include/uv.h \
- /usr/include/nodejs/deps/uv/include/uv-errno.h \
- /usr/include/nodejs/deps/uv/include/uv-version.h \
- /usr/include/nodejs/deps/uv/include/uv-unix.h \
- /usr/include/nodejs/deps/uv/include/uv-threadpool.h \
- /usr/include/nodejs/deps/uv/include/uv-linux.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-errno.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-version.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-unix.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-threadpool.h \
+ /home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-linux.h \
  /usr/local/lib/node_modules/nan/nan_callbacks.h \
  /usr/local/lib/node_modules/nan/nan_callbacks_12_inl.h \
  /usr/local/lib/node_modules/nan/nan_maybe_43_inl.h \
@@ -68,15 +70,15 @@ Release/obj.target/cam_scribble/src/RetinaFilter.o: \
 ../src/RetinaFilter.cc:
 ../src/RetinaFilter.h:
 ../src/OpenCV.h:
-/usr/include/nodejs/deps/v8/include/v8.h:
-/usr/include/nodejs/deps/v8/include/v8-version.h:
-/usr/include/nodejs/deps/v8/include/v8config.h:
-/usr/include/nodejs/src/node.h:
-/usr/include/nodejs/src/node_version.h:
-/usr/include/nodejs/src/node_object_wrap.h:
-/usr/include/nodejs/src/node_version.h:
-/usr/include/nodejs/src/node_buffer.h:
-/usr/include/nodejs/src/node.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8-version.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/v8/include/v8config.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node_version.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node_object_wrap.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node_version.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node_buffer.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/src/node.h:
 /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv/cv.h:
 /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv2/core/core_c.h:
 /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv2/core/types_c.h:
@@ -116,12 +118,12 @@ Release/obj.target/cam_scribble/src/RetinaFilter.o: \
 /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv2/imgproc.hpp:
 /home/salar/OpenCV/opencv-3.1.0/output_lib/include/opencv2/opencv_modules.hpp:
 /usr/local/lib/node_modules/nan/nan.h:
-/usr/include/nodejs/deps/uv/include/uv.h:
-/usr/include/nodejs/deps/uv/include/uv-errno.h:
-/usr/include/nodejs/deps/uv/include/uv-version.h:
-/usr/include/nodejs/deps/uv/include/uv-unix.h:
-/usr/include/nodejs/deps/uv/include/uv-threadpool.h:
-/usr/include/nodejs/deps/uv/include/uv-linux.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-errno.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-version.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-unix.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-threadpool.h:
+/home/salar/.electron-gyp/.node-gyp/iojs-1.4.4/deps/uv/include/uv-linux.h:
 /usr/local/lib/node_modules/nan/nan_callbacks.h:
 /usr/local/lib/node_modules/nan/nan_callbacks_12_inl.h:
 /usr/local/lib/node_modules/nan/nan_maybe_43_inl.h:
