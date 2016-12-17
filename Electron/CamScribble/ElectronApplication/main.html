@@ -86,7 +86,7 @@
       buf = image.toBuffer(buf);
 
 
-      glCan.renderImage(buf,640,480);
+      glCan.renderImage(buf,image.width(),image.height());
 
       // Call renderLoop again after 1/15th of a second
       setTimeout(
