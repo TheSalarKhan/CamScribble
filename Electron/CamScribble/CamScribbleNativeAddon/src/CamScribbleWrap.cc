@@ -184,6 +184,7 @@ NAN_METHOD(CamScribbleWrap::SetHeight) {
     return Nan::ThrowError("Error! This function requires exactly one float as an argument.");
   }
 
+  
   self->canvas.setHeight((float)info[0]->NumberValue());
 }
 
@@ -194,6 +195,7 @@ NAN_METHOD(CamScribbleWrap::SetWidth) {
   if(info.Length() != 1 || !info[0]->IsNumber()) {
     return Nan::ThrowError("Error! This function requires exactly one float as an argument.");
   }
+
 
   self->canvas.setWidth((float)info[0]->NumberValue());
 }
@@ -365,7 +367,6 @@ NAN_METHOD(CamScribbleWrap::GetFrame) {
   img->mat = self->outputImage;
 
   info.GetReturnValue().Set(passed);
-
 
   /*// calculate the size of the image.
   int sizeOfImage = self->outputImage.rows*self->outputImage.cols*3;

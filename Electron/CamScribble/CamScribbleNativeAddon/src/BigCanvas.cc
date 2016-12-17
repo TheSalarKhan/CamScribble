@@ -100,6 +100,9 @@ inline void getRoi(Rect& roi,const Point2f position,const Point2i bigCanvasSize,
 
 }
 
+void BigCanvas::getSmallCanvas(Mat& inputImage,Mat& outputImage) {
+
+}
 
 void BigCanvas::getFrame(Mat& inputImage,Mat& outputImage) {
 

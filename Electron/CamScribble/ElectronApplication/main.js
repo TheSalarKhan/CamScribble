@@ -13,8 +13,10 @@ function main() {
       resizable: true
   });
 
+  
 
-  win.loadURL(`file://${__dirname}/main.html`);
+
+  win.loadURL(`file://${__dirname}/calibrateCamera.html`);
 
   win.setMenu(null);
 
