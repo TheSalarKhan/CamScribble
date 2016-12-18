@@ -9,7 +9,6 @@
 
 BigCanvas::BigCanvas() {
 	// TODO Auto-generated constructor stub
-
 }
 
 
@@ -100,11 +99,17 @@ inline void getRoi(Rect& roi,const Point2f position,const Point2i bigCanvasSize,
 
 }
 
-void BigCanvas::getSmallCanvas(Mat& inputImage,Mat& outputImage) {
+void BigCanvas::getSmallCanvas(const Mat& inputImage, Mat& outputImage) {
+	// apply filter, get mask in _a,
+	// and enhanced mask in _smallCanvas.
 
+	_retinaFilter.getPerspectiveCorrection().applyPerspectiveCorrection(inputImage,outputImage);
+
+	cv::resize(outputImage,outputImage,Size(200,200));
+	
 }
 
-void BigCanvas::getFrame(Mat& inputImage,Mat& outputImage) {
+void BigCanvas::getFrame(const Mat& inputImage,Mat& outputImage) {
 
 	// apply filter, get mask in _a,
 	// and enhanced mask in _smallCanvas.
@@ -275,6 +280,7 @@ void BigCanvas::setPerspective(std::vector<Point2f> points) {
 		std::cout << "setPerspective requires a vector of length 4.";
 		exit(0);
 	}
+
 
 	_retinaFilter.getPerspectiveCorrection()
 			.setSurfaceCorners(points[0],points[1],points[2],points[3]);

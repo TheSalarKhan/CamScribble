@@ -75,6 +75,8 @@ void RetinaFilter::applyFilter(const Mat& inputImage,Mat& alphaMask,Mat& outputI
 	// 1) Apply perspective transformation.
 	_persp.applyPerspectiveCorrection(inputImage,alphaMask);
 
+  
+
 
 	// 2) convert to grayscale
 	cvtColor(alphaMask,alphaMask,CV_BGR2GRAY);

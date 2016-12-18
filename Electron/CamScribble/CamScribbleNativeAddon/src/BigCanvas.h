@@ -17,7 +17,8 @@ class BigCanvas {
 public:
 	BigCanvas();
 	BigCanvas(Size sizeOfBigCanvas,Scalar backgroundColor,std::vector<Point2f> points);
-	void getFrame(Mat& inputImage, Mat& outputImage);
+	void getFrame(const Mat& inputImage, Mat& outputImage);
+	void getSmallCanvas(const Mat& inputImage, Mat& outputImage);
 	void undo();
 	void redo();
 	void setInkColor(Point3f color);

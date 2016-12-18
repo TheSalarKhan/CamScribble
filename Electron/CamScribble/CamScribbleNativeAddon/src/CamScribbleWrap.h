@@ -7,6 +7,8 @@ public:
   
   cv::Mat cameraImage;
   cv::Mat outputImage;
+
+  cv::Mat smallCanvasImage;
   
   BigCanvas canvas;
   int cameraIndex;
@@ -55,6 +57,7 @@ public:
   //
   static NAN_METHOD(GetNewFrame);
   static NAN_METHOD(GetFrame);
+  static NAN_METHOD(GetSmallCanvas);
 
   static NAN_METHOD(GetAvailableCameras);
   static NAN_METHOD(SetCamera);

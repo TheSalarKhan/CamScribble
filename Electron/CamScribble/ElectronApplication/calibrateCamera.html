@@ -15,19 +15,47 @@
       left:0px;
     }
 
+    .col-centered{
+        float: none;
+        margin: 0 auto;
+    }
+
   </style>
 </head>
-<body>
+<body style="background-color: #242424">
   <div class="container container-main">
-    <div id='canvas-container'>
-      <canvas id="canvas"></canvas>
-      <svg id="dragabbles" ></svg>
+
+    <div class="row">
+      <div class="col-lg-1 col-centered" id='canvas-container'>
+        <canvas id="canvas"></canvas>
+        <svg id="dragabbles" ></svg>
+      </div>
     </div>
+    <hr>
+    <div class="row">
 
+      <div class="col-lg-12 col-centered" style="">
+        <div class= "col-xs-7">
+          <p style='color:#F8F8F2'>Position the colored dots in the picture by dragging them. Place them on the corners of the surface you wish CamScribble to capture.<br>
+        Place the <span style="color:red">red</span> dot on the top left corner of the surface</br>
+        Place the <span style="color:green">green</span> dot on the top left corner of the surface</br>
+        Place the <span style="color:blue">blue</span> dot on the top left corner of the surface</br>
+        Place the <span style="color:yellow">yellow</span> dot on the top left corner of the surface<p>
+        </div>
+        <div class= "col-xs-5">
+          <div style="float:right">
+            <p style='color:#F8F8F2'>Preview:<p>
+            <canvas id="canvas-output"></canvas>
+          </div>
+        </div>
+        
+          
+      </div>
+      
+
+      
+    </div>
     
-    <canvas id="canvas-output"></canvas>
-
-    <p>Position the colored dots at the corners of the drawing surface in the picture.</p>
   </div>
 
   <!-- Insert this line above script imports  -->
@@ -98,10 +126,6 @@
       }
     }
 
-  </script>
-  
-
-  <script>
 
   $(document).ready(function() {
     const GlCanvasForDummies = require('./js/GlCanvasForDummies');
@@ -112,13 +136,13 @@
     var camScribble = new CamScribble([800,800],[0,0,0]);
     camScribble.setCamera(0);
 
-    // width and height of the preview is 200x200
-    camScribble.setHeight(0.5);
-    camScribble.setWidth(0.5);
+
+    //camScribble.setHeight(0.8);
+    //camScribble.setWidth(0.8);
 
     var image = camScribble.getCameraFrame();
     var buf = image.toBuffer();
-    var outputImage = camScribble.getFrame();
+    var outputImage = camScribble.getPerspectiveCorrectionPreview();
     var outputBuffer = outputImage.toBuffer();
 
     // Initialize glCanvas.
@@ -130,8 +154,8 @@
     var glCanOutput = 
       new GlCanvasForDummies(
         document.getElementById('canvas-output'),
-        200,
-        200);
+        outputImage.width(),
+        outputImage.height());
 
 
     var perspectivePoints =
@@ -141,11 +165,10 @@
       [0.25,0.75],
       [0.75,0.75]
     ];
+
+    camScribble.setPerspective(perspectivePoints);
     // setup the draggables for the UI.
     setDraggables(perspectivePoints,image.width(),image.height(),function(name,x,y) {
-
-      console.log(name);
-      console.log(x + " " + y);
 
       perspectivePoints[name][0] = x;
       perspectivePoints[name][1] = y;
@@ -153,8 +176,8 @@
       camScribble.setPerspective(perspectivePoints);
     });
 
-    document.getElementById('canvas-container').setAttribute("style","width:"+image.width()+"px");
-    document.getElementById('canvas-container').setAttribute("style","height:"+image.height()+"px");
+    document.getElementById('canvas-container')
+      .setAttribute("style","width:"+image.width()+"px;height:"+image.height()+"px");
 
     // Enter the rendering loop.
     function renderLoop() {
@@ -162,12 +185,12 @@
       buf = image.toBuffer(buf);
 
 
-      outputImage = camScribble.getFrame(outputImage);
+      outputImage = camScribble.getPerspectiveCorrectionPreview(outputImage);
       outputBuffer = outputImage.toBuffer(outputBuffer);
 
 
       glCan.renderImage(buf,image.width(),image.height());
-      glCanOutput.renderImage(outputBuffer,200,200);
+      glCanOutput.renderImage(outputBuffer,outputImage.width(),outputImage.height());
 
       // Call renderLoop again after 1/15th of a second
       setTimeout(

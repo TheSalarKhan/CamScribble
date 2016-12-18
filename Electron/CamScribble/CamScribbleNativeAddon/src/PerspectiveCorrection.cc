@@ -22,6 +22,7 @@ void PerspectiveCorrection::setSurfaceCorners(Point2f tl, Point2f tr, Point2f bl
   _params.bl = bl;
   _params.br = br;
 
+  calculateTransformationMatrix();
 
 }
 
