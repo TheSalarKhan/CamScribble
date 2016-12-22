@@ -4,34 +4,40 @@
 class CamScribbleWrap: public Nan::ObjectWrap {
 public:
   cv::VideoCapture camera;
-  
+
   cv::Mat cameraImage;
   cv::Mat outputImage;
 
   cv::Mat smallCanvasImage;
-  
+
   BigCanvas canvas;
   int cameraIndex;
 
 
   static bool isCameraValid(int camId) {
+    cv::VideoCapture temp;
     try {
-      cv::VideoCapture temp = cv::VideoCapture(camId);
+      temp = cv::VideoCapture(camId);
+
     } catch(cv::Exception& e) {
+
       return false;
     }
-    return true;
+
+    return temp.isOpened();
   }
 
-  static int countCameras()
+  static std::vector<int> countCameras()
   {
+    std::vector<int> toReturn;
   	cv::VideoCapture temp;
   	int max = 10;
   	for (int i = 0; i < max; i++){
-  		if(!isCameraValid(i))
-        return i;
+  		if(isCameraValid(i)) {
+        toReturn.push_back(i);
+      }
   	}
-  	return max;
+  	return toReturn;
   }
 
 

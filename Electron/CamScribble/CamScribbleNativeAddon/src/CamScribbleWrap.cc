@@ -28,12 +28,12 @@ void CamScribbleWrap::Init(Local<Object> target) {
   Nan::SetPrototypeMethod(ctor,"exportAsImage",ExportAsImage);
 
   Nan::SetPrototypeMethod(ctor,"setCamera",SetCamera);
-  
+
   Nan::SetPrototypeMethod(ctor,"getFrame",GetFrame);
 
   Nan::SetPrototypeMethod(ctor,"getCameraFrame",GetCameraFrame);
 
-  Nan::SetPrototypeMethod(ctor,"getPerspectivePreview",GetSmallCanvas);
+  Nan::SetPrototypeMethod(ctor,"getPerspectiveCorrectionPreview",GetSmallCanvas);
 
 
   Nan::SetPrototypeMethod(ctor,"getAvailableCameras",GetAvailableCameras);
@@ -80,7 +80,7 @@ NAN_METHOD(CamScribbleWrap::New) {
   int b = backgroundColor->Get(2)->IntegerValue();
 
 
-  CamScribbleWrap *v = 
+  CamScribbleWrap *v =
   	new CamScribbleWrap(cv::Size(width,height),cv::Scalar(r,g,b));
 
   v->Wrap(info.This());
@@ -186,7 +186,7 @@ NAN_METHOD(CamScribbleWrap::SetHeight) {
     return Nan::ThrowError("Error! This function requires exactly one float as an argument.");
   }
 
-  
+
   self->canvas.setHeight((float)info[0]->NumberValue());
 }
 
@@ -324,9 +324,16 @@ NAN_METHOD(CamScribbleWrap::GetAvailableCameras) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
-  int count = self->countCameras();
+  std::vector<int> cameras = self->countCameras();
+  //int count = self->countCameras();
 
-  info.GetReturnValue().Set(Integer::New(info.GetIsolate(),count));
+  Local<Array> cameraList = Array::New(info.GetIsolate());
+
+  for(unsigned int i=0;i< cameras.size();i++) {
+    cameraList->Set(i,Integer::New(info.GetIsolate(),cameras[i]));
+  }
+
+  info.GetReturnValue().Set(cameraList);
 }
 
 
@@ -352,7 +359,7 @@ NAN_METHOD(CamScribbleWrap::GetFrame) {
 
   if(info.Length() != 1) {
 
-    Local<Object> toReturn = 
+    Local<Object> toReturn =
       Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
 
     Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
@@ -370,7 +377,7 @@ NAN_METHOD(CamScribbleWrap::GetFrame) {
   img->mat = self->outputImage;
 
   info.GetReturnValue().Set(passed);
-  
+
 }
 
 
@@ -394,7 +401,7 @@ NAN_METHOD(CamScribbleWrap::GetCameraFrame) {
 
   if(info.Length() != 1) {
 
-    Local<Object> toReturn = 
+    Local<Object> toReturn =
       Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
 
     Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
@@ -422,9 +429,9 @@ NAN_METHOD(CamScribbleWrap::GetSmallCanvas) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
-  
 
-  
+
+
 
   if(self->cameraIndex == -1) {
     info.GetReturnValue().Set(Null(info.GetIsolate()));
@@ -443,7 +450,7 @@ NAN_METHOD(CamScribbleWrap::GetSmallCanvas) {
 
   if(info.Length() != 1) {
 
-    Local<Object> toReturn = 
+    Local<Object> toReturn =
       Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
 
     Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
@@ -462,4 +469,3 @@ NAN_METHOD(CamScribbleWrap::GetSmallCanvas) {
 
   info.GetReturnValue().Set(passed);
 }
-

@@ -1,30 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  
+
   <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
   <style>
 
-    #canvas-container {
-      position:relative;
-    }
+  #canvas-container {
+    position:relative;
+  }
 
-    #canvas-container * {
-      position:absolute;
-      top:0px;
-      left:0px;
-    }
+  #canvas-container * {
+    position:absolute;
+    top:0px;
+    left:0px;
+  }
 
-    .col-centered{
-        float: none;
-        margin: 0 auto;
-    }
+  .col-centered{
+    float: none;
+    margin: 0 auto;
+  }
 
   </style>
 </head>
 <body style="background-color: #242424">
   <div class="container container-main">
-
     <div class="row">
       <div class="col-lg-1 col-centered" id='canvas-container'>
         <canvas id="canvas"></canvas>
@@ -33,177 +32,267 @@
     </div>
     <hr>
     <div class="row">
-
+      <select id='selectCamera'>
+        <option>Select camera</option>
+      </select>
+    </div>
+    <div class="row">
       <div class="col-lg-12 col-centered" style="">
         <div class= "col-xs-7">
-          <p style='color:#F8F8F2'>Position the colored dots in the picture by dragging them. Place them on the corners of the surface you wish CamScribble to capture.<br>
-        Place the <span style="color:red">red</span> dot on the top left corner of the surface</br>
-        Place the <span style="color:green">green</span> dot on the top left corner of the surface</br>
-        Place the <span style="color:blue">blue</span> dot on the top left corner of the surface</br>
-        Place the <span style="color:yellow">yellow</span> dot on the top left corner of the surface<p>
+          <p style='color:#F8F8F2'>Position the colored dots in the picture by dragging them. Place them on the corners of the surface you wish CamScribble to capture.</br>
+            Place the <span style="color:red">red</span> dot on the top left corner of the surface</br>
+            Place the <span style="color:green">green</span> dot on the top left corner of the surface</br>
+            Place the <span style="color:blue">blue</span> dot on the top left corner of the surface</br>
+            Place the <span style="color:yellow">yellow</span> dot on the top left corner of the surface</br>
+            Press done when ready!
+          </p>
+          <div class="row" style='padding-left:15px;'>
+            <button id='done' style='float:left;width:100px;background-color:#2d2d2d;color:#efefef'>Done</button>
+          </div>
         </div>
         <div class= "col-xs-5">
           <div style="float:right">
             <p style='color:#F8F8F2'>Preview:<p>
-            <canvas id="canvas-output"></canvas>
+              <canvas id="canvas-output"></canvas>
           </div>
         </div>
-        
-          
       </div>
-      
-
-      
     </div>
-    
   </div>
-
-  <!-- Insert this line above script imports  -->
-  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-  <script src="js/jquery.min.js"></script>
-  <script src="js/d3.js"></script>
-  <script>if (window.module) module = window.module;</script>
-  
-
-  <script>
-
-    function setDraggables(points,width,height,callback) {
-      // set width and height for svg container
-      var svgContainer = document.getElementById('dragabbles');
-      svgContainer.setAttribute("width", width+"px");
-      svgContainer.setAttribute("height", height+"px");
-
-      var svg = d3.select("svg"),
-        radius = 10,
-        strokeWidth = 5;
-
-      
-
-      var circles = [
-      {x: points[0][0] * width, y: points[0][1] * height, color: '#ff0000', name: 0, stroke: 'black'},
-      {x: points[1][0] * width, y: points[1][1] * height, color: '#00ff00', name: 1, stroke: 'black'},
-      {x: points[2][0] * width, y: points[2][1] * height, color: '#0000ff', name: 2, stroke: 'black'},
-      {x: points[3][0] * width, y: points[3][1] * height, color: '#ffff00', name: 3, stroke: 'black'}
-      ];
-
-      
-
-      var elem = svg.selectAll("circle")
-        .data(circles)
-        .enter().append("circle")
-          .attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return d.y; })
-          .attr("r", radius)
-          .attr("stroke", function(d) { return d.stroke; })
-          .attr("stroke-width", strokeWidth)
-          .style("fill", function(d, i) { return d.color; })
-          .call(d3.drag()
-              .on("start", dragstarted)
-              .on("drag", dragged)
-              .on("end", dragended))
-          .append("text")
-            .attr("dx", function(d){return -20})
-            .text(function(d){return d.name});
-
-      function dragstarted(d) {
-        d3.select(this).raise().classed("active", true);
-      }
-
-      function dragged(d) {
-        if( d3.event.x >=0 && 
-            d3.event.y >= 0 && 
-            d3.event.x <= width && 
-            d3.event.y <= height) {
-          d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-        }
-      }
-
-      function dragended(d) {
-        //d3.select(this).classed("active", false);
-
-        callback(d.name,d.x/width,d.y/height);
-        //console.log(d.name+': '+d.x/width+','+d.y/height);
-      }
-    }
-
-
-  $(document).ready(function() {
-    const GlCanvasForDummies = require('./js/GlCanvasForDummies');
-    const CamScribble = require('cam_scribble').CamScribble;
-    const {ipcRenderer} = require('electron');
-
-    // setup openCV camera, and read the first image.
-    var camScribble = new CamScribble([800,800],[0,0,0]);
-    camScribble.setCamera(0);
-
-
-    //camScribble.setHeight(0.8);
-    //camScribble.setWidth(0.8);
-
-    var image = camScribble.getCameraFrame();
-    var buf = image.toBuffer();
-    var outputImage = camScribble.getPerspectiveCorrectionPreview();
-    var outputBuffer = outputImage.toBuffer();
-
-    // Initialize glCanvas.
-    var glCan = 
-      new GlCanvasForDummies(
-        document.getElementById('canvas'),
-        image.width(),
-        image.height());
-    var glCanOutput = 
-      new GlCanvasForDummies(
-        document.getElementById('canvas-output'),
-        outputImage.width(),
-        outputImage.height());
-
-
-    var perspectivePoints =
-    [
-      [0.25,0.25],
-      [0.75,0.25],
-      [0.25,0.75],
-      [0.75,0.75]
-    ];
-
-    camScribble.setPerspective(perspectivePoints);
-    // setup the draggables for the UI.
-    setDraggables(perspectivePoints,image.width(),image.height(),function(name,x,y) {
-
-      perspectivePoints[name][0] = x;
-      perspectivePoints[name][1] = y;
-
-      camScribble.setPerspective(perspectivePoints);
-    });
-
-    document.getElementById('canvas-container')
-      .setAttribute("style","width:"+image.width()+"px;height:"+image.height()+"px");
-
-    // Enter the rendering loop.
-    function renderLoop() {
-      image = camScribble.getCameraFrame(image);
-      buf = image.toBuffer(buf);
-
-
-      outputImage = camScribble.getPerspectiveCorrectionPreview(outputImage);
-      outputBuffer = outputImage.toBuffer(outputBuffer);
-
-
-      glCan.renderImage(buf,image.width(),image.height());
-      glCanOutput.renderImage(outputBuffer,outputImage.width(),outputImage.height());
-
-      // Call renderLoop again after 1/15th of a second
-      setTimeout(
-        function() {
-          requestAnimationFrame(renderLoop)
-        },1000/15);
-    }
-
-    ipcRenderer.send('a-message','hahah');
-    renderLoop();
-  });
-    
-
-  </script>
 </body>
+
+
+<!-- Insert this line above script imports  -->
+<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+<script src="js/jquery.min.js"></script>
+<script src="js/d3.js"></script>
+<script>if (window.module) module = window.module;</script>
+
+
+<script>
+
+function setDraggables(points,width,height,callback) {
+  // set width and height for svg container
+  var svgContainer = document.getElementById('dragabbles');
+  svgContainer.setAttribute("width", width+"px");
+  svgContainer.setAttribute("height", height+"px");
+
+  var svg = d3.select("svg"),
+  radius = 10,
+  strokeWidth = 5;
+
+
+
+  var circles = [
+  {x: points[0][0] * width, y: points[0][1] * height, color: '#ff0000', name: 0, stroke: 'black'},
+  {x: points[1][0] * width, y: points[1][1] * height, color: '#00ff00', name: 1, stroke: 'black'},
+  {x: points[2][0] * width, y: points[2][1] * height, color: '#0000ff', name: 2, stroke: 'black'},
+  {x: points[3][0] * width, y: points[3][1] * height, color: '#ffff00', name: 3, stroke: 'black'}
+  ];
+
+
+
+  var elem = svg.selectAll("circle")
+  .data(circles)
+  .enter().append("circle")
+  .attr("cx", function(d) { return d.x; })
+  .attr("cy", function(d) { return d.y; })
+  .attr("r", radius)
+  .attr("stroke", function(d) { return d.stroke; })
+  .attr("stroke-width", strokeWidth)
+  .style("fill", function(d, i) { return d.color; })
+  .call(d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended))
+  .append("text")
+  .attr("dx", function(d){return -20})
+  .text(function(d){return d.name});
+
+  function dragstarted(d) {
+    d3.select(this).raise().classed("active", true);
+  }
+
+  function dragged(d) {
+    if( d3.event.x >=0 &&
+      d3.event.y >= 0 &&
+      d3.event.x <= width &&
+      d3.event.y <= height) {
+      d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+  }
+  }
+
+  function dragended(d) {
+    //d3.select(this).classed("active", false);
+
+    callback(d.name,d.x/width,d.y/height);
+    //console.log(d.name+': '+d.x/width+','+d.y/height);
+  }
+}
+
+
+function injectDropDown(data,dropDownId) {
+  $(dropDownId)
+  .find('option')
+  .remove();
+
+  if(data.length == 0) {
+    // remove all the values
+    $(dropDownId).append('<option value="-1">No camera available</option>');
+    return;
+  }
+
+  $(dropDownId).append('<option selected="true" disabled>Select camera</option>');
+
+  for(var i=0;i< data.length;i++) {
+    $(dropDownId).append('<option value="'+data[i]+'">Camera '+data[i]+'</option>');
+  }
+
+}
+
+
+
+
+
+
+$(document).ready(function() {
+const GlCanvasForDummies = require('./js/GlCanvasForDummies');
+const CamScribble = require('cam_scribble').CamScribble;
+const {ipcRenderer} = require('electron');
+
+// setup openCV camera, and read the first image.
+camScribble = new CamScribble([800,800],[0,0,0]);
+var cameras = camScribble.getAvailableCameras();
+var selectedCamera = null;
+injectDropDown(cameras,'#selectCamera');
+
+if(cameras.length != 0) {
+  camScribble.setCamera(cameras[0]);
+  selectedCamera = cameras[0];
+}
+
+
+
+//camScribble.setHeight(0.8);
+//camScribble.setWidth(0.8);
+
+var image = camScribble.getCameraFrame();
+var buf = image.toBuffer();
+var outputImage = camScribble.getPerspectiveCorrectionPreview();
+var outputBuffer = outputImage.toBuffer();
+
+// Initialize glCanvas.
+var glCan =
+new GlCanvasForDummies(
+document.getElementById('canvas'),
+image.width(),
+image.height());
+var glCanOutput =
+new GlCanvasForDummies(
+document.getElementById('canvas-output'),
+outputImage.width(),
+outputImage.height());
+
+
+var perspectivePoints =
+[
+[0.25,0.25],
+[0.75,0.25],
+[0.25,0.75],
+[0.75,0.75]
+];
+
+camScribble.setPerspective(perspectivePoints);
+// setup the draggables for the UI.
+setDraggables(perspectivePoints,image.width(),image.height(),function(name,x,y) {
+
+perspectivePoints[name][0] = x;
+perspectivePoints[name][1] = y;
+
+camScribble.setPerspective(perspectivePoints);
+});
+
+document.getElementById('canvas-container')
+.setAttribute("style","width:"+image.width()+"px;height:"+image.height()+"px");
+
+// Enter the rendering loop.
+function renderLoop() {
+image = camScribble.getCameraFrame(image);
+buf = image.toBuffer(buf);
+
+
+outputImage = camScribble.getPerspectiveCorrectionPreview(outputImage);
+outputBuffer = outputImage.toBuffer(outputBuffer);
+
+
+glCan.renderImage(buf,image.width(),image.height());
+glCanOutput.renderImage(outputBuffer,outputImage.width(),outputImage.height());
+
+// Call renderLoop again after 1/15th of a second
+setTimeout(
+  function() {
+    requestAnimationFrame(renderLoop)
+  },1000/15);
+}
+
+ipcRenderer.send('a-message','hahah');
+renderLoop();
+
+$('#done').on('click',function() {
+alert('ahaa');
+});
+
+
+
+
+
+$('#selectCamera').on("mousedown",() => {
+
+  cameras = [];
+
+  if(selectedCamera != null)
+    cameras.push(selectedCamera);
+
+  var availableCams = camScribble.getAvailableCameras();
+
+  for(var i=0;i<availableCams.length;i++) {
+    cameras.push(availableCams[i]);
+  }
+
+  injectDropDown(cameras,'#selectCamera');
+
+});
+
+$('#selectCamera').on("change", function(event) {
+  var dropDownElement = event.target;
+  var cameraToSelect = dropDownElement[dropDownElement.selectedIndex].value;
+  //console.log();
+  //console.log(event.target[event.target.selectedIndex].value);
+  camScribble.releaseCam();
+  selectCamera = null;
+  camScribble.setCamera(parseInt(cameraToSelect));
+
+  selectedCamera = cameraToSelect;
+  renderLoop();
+});
+
+//
+// $('#selectCamera').on('click', function() {
+//   if($(this).hasClass('open')) {
+//       alert('it works');
+//   }
+//   //console.log('changed');
+// });
+
+//
+// $('#selectCamera').change(() => {
+//    // Camera has changed.
+//    console.log($('#selectCamera').value());
+// });
+
+
+});
+
+
+</script>
 </html>

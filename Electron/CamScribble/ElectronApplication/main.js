@@ -4,17 +4,12 @@ const CamScribble = require('cam_scribble').CamScribble;
 let win
 
 function main() {
-
-
   win = new BrowserWindow({
       width:800,
       height:800,
       titleBarStyle: 'hidden',
       resizable: true
   });
-
-  
-
 
   win.loadURL(`file://${__dirname}/calibrateCamera.html`);
 
