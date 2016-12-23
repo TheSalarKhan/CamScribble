@@ -33,7 +33,9 @@ void CamScribbleWrap::Init(Local<Object> target) {
 
   Nan::SetPrototypeMethod(ctor,"getCameraFrame",GetCameraFrame);
 
-  Nan::SetPrototypeMethod(ctor,"getPerspectiveCorrectionPreview",GetSmallCanvas);
+  //Nan::SetPrototypeMethod(ctor,"getCameraFrameAsync",GetCameraFrameAsync);
+
+  Nan::SetPrototypeMethod(ctor,"getCalibrationFrames",GetCalibrationFrames);
 
 
   Nan::SetPrototypeMethod(ctor,"getAvailableCameras",GetAvailableCameras);
@@ -98,6 +100,17 @@ CamScribbleWrap::CamScribbleWrap(cv::Size canvasSize,cv::Scalar backgroundColor)
   cameraIndex = -1;
 
   canvas = BigCanvas(canvasSize,backgroundColor,points);
+
+  // initialize libuv mutex and condition variables.
+  uv_mutex_init(&mutex);
+  uv_cond_init(&cv);
+}
+
+CamScribbleWrap::~CamScribbleWrap() {
+
+  // destroy libuv mutex and condition variables.
+  uv_mutex_destroy(&mutex);
+  uv_cond_destroy(&cv);
 }
 
 // give normalized co-ordinates, in the order:
@@ -285,28 +298,32 @@ NAN_METHOD(CamScribbleWrap::SetCamera) {
       return Nan::ThrowError("Error! This function takes in exactly one integer - the camera Id.");
   }
 
-  // if the camera is open release it.
-  if(self->cameraIndex != -1) {
-    self->camera.release();
-    self->cameraIndex = -1;
+  uv_mutex_lock(&(self->mutex));
+  {
+    // if the camera is open release it.
+    if(self->cameraIndex != -1) {
+      self->camera.release();
+      self->cameraIndex = -1;
+    }
+
+    int cameraId = info[0]->IntegerValue();
+
+    try {
+      self->camera = cv::VideoCapture(cameraId);
+      self->cameraIndex = cameraId;
+
+      // std::string message = "camera open";
+      // return Nan::ThrowError(message.c_str());
+    } catch(cv::Exception& e) {
+      self->cameraIndex = -1;
+      std::string message = "cannot open camera "+std::to_string(cameraId)+". It might be in use or not present.";
+
+      uv_mutex_unlock(&(self->mutex));
+      return Nan::ThrowError(message.c_str());
+    }
   }
+  uv_mutex_unlock(&(self->mutex));
 
-  int cameraId = info[0]->IntegerValue();
-
-
-
-
-  try {
-    self->camera = cv::VideoCapture(cameraId);
-    self->cameraIndex = cameraId;
-
-    // std::string message = "camera open";
-    // return Nan::ThrowError(message.c_str());
-  } catch(cv::Exception& e) {
-    self->cameraIndex = -1;
-    std::string message = "cannot open camera "+std::to_string(cameraId)+". It might be in use or not present.";
-    return Nan::ThrowError(message.c_str());
-  }
 
 }
 
@@ -314,26 +331,34 @@ NAN_METHOD(CamScribbleWrap::ReleaseCam) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
-  if(self->cameraIndex != -1) {
-    self->camera.release();
-    self->cameraIndex = -1;
+  uv_mutex_lock(&(self->mutex));
+  {
+    if(self->cameraIndex != -1) {
+      self->camera.release();
+      self->cameraIndex = -1;
+    }
   }
+  uv_mutex_unlock(&(self->mutex));
 }
 
 NAN_METHOD(CamScribbleWrap::GetAvailableCameras) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
-  std::vector<int> cameras = self->countCameras();
-  //int count = self->countCameras();
+  uv_mutex_lock(&(self->mutex));
+  {
+    std::vector<int> cameras = self->countCameras();
+    //int count = self->countCameras();
 
-  Local<Array> cameraList = Array::New(info.GetIsolate());
+    Local<Array> cameraList = Array::New(info.GetIsolate());
 
-  for(unsigned int i=0;i< cameras.size();i++) {
-    cameraList->Set(i,Integer::New(info.GetIsolate(),cameras[i]));
+    for(unsigned int i=0;i< cameras.size();i++) {
+      cameraList->Set(i,Integer::New(info.GetIsolate(),cameras[i]));
+    }
+
+    info.GetReturnValue().Set(cameraList);
   }
-
-  info.GetReturnValue().Set(cameraList);
+  uv_mutex_unlock(&(self->mutex));
 }
 
 
@@ -381,9 +406,6 @@ NAN_METHOD(CamScribbleWrap::GetFrame) {
 }
 
 
-
-
-
 NAN_METHOD(CamScribbleWrap::GetCameraFrame) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
@@ -420,6 +442,121 @@ NAN_METHOD(CamScribbleWrap::GetCameraFrame) {
 
   info.GetReturnValue().Set(passed);
 
+}
+
+
+// This class describes the thread that's created
+// when a call to GetCalibrationFrames is made.
+class GetClibrationFramesAsyncWorker: public Nan::AsyncWorker {
+  public: GetClibrationFramesAsyncWorker(Nan::Callback *callback, CamScribbleWrap* self) :
+      Nan::AsyncWorker(callback),
+      self(self) {
+  }
+
+  public: ~GetClibrationFramesAsyncWorker() {
+  }
+
+  // Executed inside the worker-thread.
+  // It is not safe to access V8, or V8 data structures
+  // here, so everything we need for input and output
+  // should go on `this`.
+  public: void Execute() {
+
+    uv_mutex_lock(&(self->mutex));
+    {
+      if(self->cameraIndex == -1) {
+        this->success = false;
+        uv_mutex_unlock(&(self->mutex));
+        return;
+      }
+
+      try {
+        // read a frame from the camera
+        if(self->camera.read(self->cameraImage)) {
+          self->canvas.getSmallCanvas(self->cameraImage, self->smallCanvasImage);
+
+          // convert to RGB images
+          cv::cvtColor(self->smallCanvasImage,self->smallCanvasImage,CV_BGR2RGB);
+          cv::cvtColor(self->cameraImage,self->cameraImage,CV_BGR2RGB);
+
+          this->success = true;
+        } else {
+          this->success = false;
+        }
+      } catch(cv::Exception& e) {
+        this->success = false;
+        uv_mutex_unlock(&(self->mutex));
+        return;
+      }
+    }
+
+    uv_mutex_unlock(&(self->mutex));
+  }
+
+  // Executed when the async work is complete
+  // this function will be run inside the main event loop
+  // so it is safe to use V8 again
+  void HandleOKCallback() {
+    Nan::HandleScope scope;
+
+    if(!this->success) {
+      return Nan::ThrowError("Error! cannot get frame without camera input. \nPlease call '.setCamera()' with an appropriate cam id before calling getCalibrationFrames() again.");
+    }
+
+    Local<Object> cameraImageToReturn= Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(cameraImageToReturn);
+    img->mat = self->cameraImage;
+
+
+    Local<Object> perspectiveCorrectionImage= Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+    img = Nan::ObjectWrap::Unwrap<Matrix>(perspectiveCorrectionImage);
+    img->mat = self->smallCanvasImage;
+
+    Local<Value> argv[] = {
+      cameraImageToReturn,
+      perspectiveCorrectionImage
+    };
+
+    Nan::TryCatch try_catch;
+    callback->Call(2, argv);
+    if (try_catch.HasCaught()) {
+      Nan::FatalException(try_catch);
+    }
+  }
+
+  private: CamScribbleWrap *self;
+  private: bool success;
+
+};
+
+// NAN_METHOD(CamScribbleWrap::GetCameraFrameAsync) {
+//   Nan::HandleScope scope;
+//   CamScribbleWrap *self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
+//
+//   REQ_FUN_ARG(0, cb);
+//
+//   Nan::Callback *callback = new Nan::Callback(cb.As<Function>());
+//   Nan::AsyncQueueWorker(new GetCameraFrameAsyncWorker(callback, self));
+//
+//   return;
+// }
+
+
+
+
+NAN_METHOD(CamScribbleWrap::GetCalibrationFrames) {
+  Nan::HandleScope scope;
+  CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
+
+
+
+  REQ_FUN_ARG(0, cb);
+
+  Nan::Callback *callback = new Nan::Callback(cb.As<Function>());
+
+  Nan::AsyncQueueWorker(new GetClibrationFramesAsyncWorker(callback, self));
+
+  // return nothing;
 }
 
 

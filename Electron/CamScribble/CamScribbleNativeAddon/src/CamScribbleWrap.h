@@ -14,6 +14,13 @@ public:
   int cameraIndex;
 
 
+  // condition variable and mutex
+  // to make camera release and camera read
+  // mutually exclusive events.
+  uv_cond_t cv;
+  uv_mutex_t mutex;
+
+
   static bool isCameraValid(int camId) {
     cv::VideoCapture temp;
     try {
@@ -46,6 +53,7 @@ public:
   static NAN_METHOD(New);
 
   CamScribbleWrap(cv::Size canvasSize,cv::Scalar backgroundColor);
+  ~CamScribbleWrap();
 
   static NAN_METHOD(SetPerspective);
   static NAN_METHOD(SetNoise);
@@ -71,5 +79,8 @@ public:
 
   static NAN_METHOD(GetNewCameraFrame);
   static NAN_METHOD(GetCameraFrame);
+
+
+  static NAN_METHOD(GetCalibrationFrames);
 
 };

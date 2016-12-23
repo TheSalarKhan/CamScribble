@@ -16,7 +16,7 @@ void Matrix::Init(Local<Object> target) {
   Nan::SetPrototypeMethod(ctor, "width", Width);
   Nan::SetPrototypeMethod(ctor, "height", Height);
   Nan::SetPrototypeMethod(ctor, "toBuffer", ToBuffer);
-  
+
   target->Set(Nan::New("Matrix").ToLocalChecked(), ctor->GetFunction());
 };
 
@@ -42,7 +42,7 @@ NAN_METHOD(Matrix::ToBuffer) {
 
   // calculate the size of the image.
   int sizeOfImage = self->mat.rows*self->mat.cols*3;
-  
+
   if(info.Length() == 1) {
     // unwrap the passed buffer.
     // copy data from image to buffer.
@@ -52,7 +52,7 @@ NAN_METHOD(Matrix::ToBuffer) {
     info.GetReturnValue().Set(buf);
     return;
   }
-  
+
 
   // create a buffer to hold the image data.
   Local < Object > buf = Nan::NewBuffer(sizeOfImage).ToLocalChecked();

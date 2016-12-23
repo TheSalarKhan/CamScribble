@@ -31,7 +31,7 @@
       </div>
     </div>
     <hr>
-    <div class="row">
+    <div class="row" style="padding-left:30px">
       <select id='selectCamera'>
         <option>Select camera</option>
       </select>
@@ -60,6 +60,7 @@
     </div>
   </div>
 </body>
+
 
 
 <!-- Insert this line above script imports  -->
@@ -156,139 +157,136 @@ function injectDropDown(data,dropDownId) {
 
 
 $(document).ready(function() {
-const GlCanvasForDummies = require('./js/GlCanvasForDummies');
-const CamScribble = require('cam_scribble').CamScribble;
-const {ipcRenderer} = require('electron');
+  const GlCanvasForDummies = require('./js/GlCanvasForDummies');
+  const CamScribble = require('cam_scribble').CamScribble;
+  const {ipcRenderer} = require('electron');
 
-// setup openCV camera, and read the first image.
-camScribble = new CamScribble([800,800],[0,0,0]);
-var cameras = camScribble.getAvailableCameras();
-var selectedCamera = null;
-injectDropDown(cameras,'#selectCamera');
-
-if(cameras.length != 0) {
-  camScribble.setCamera(cameras[0]);
-  selectedCamera = cameras[0];
-}
-
-
-
-//camScribble.setHeight(0.8);
-//camScribble.setWidth(0.8);
-
-var image = camScribble.getCameraFrame();
-var buf = image.toBuffer();
-var outputImage = camScribble.getPerspectiveCorrectionPreview();
-var outputBuffer = outputImage.toBuffer();
-
-// Initialize glCanvas.
-var glCan =
-new GlCanvasForDummies(
-document.getElementById('canvas'),
-image.width(),
-image.height());
-var glCanOutput =
-new GlCanvasForDummies(
-document.getElementById('canvas-output'),
-outputImage.width(),
-outputImage.height());
-
-
-var perspectivePoints =
-[
-[0.25,0.25],
-[0.75,0.25],
-[0.25,0.75],
-[0.75,0.75]
-];
-
-camScribble.setPerspective(perspectivePoints);
-// setup the draggables for the UI.
-setDraggables(perspectivePoints,image.width(),image.height(),function(name,x,y) {
-
-perspectivePoints[name][0] = x;
-perspectivePoints[name][1] = y;
-
-camScribble.setPerspective(perspectivePoints);
-});
-
-document.getElementById('canvas-container')
-.setAttribute("style","width:"+image.width()+"px;height:"+image.height()+"px");
-
-// Enter the rendering loop.
-function renderLoop() {
-image = camScribble.getCameraFrame(image);
-buf = image.toBuffer(buf);
-
-
-outputImage = camScribble.getPerspectiveCorrectionPreview(outputImage);
-outputBuffer = outputImage.toBuffer(outputBuffer);
-
-
-glCan.renderImage(buf,image.width(),image.height());
-glCanOutput.renderImage(outputBuffer,outputImage.width(),outputImage.height());
-
-// Call renderLoop again after 1/15th of a second
-setTimeout(
-  function() {
-    requestAnimationFrame(renderLoop)
-  },1000/15);
-}
-
-ipcRenderer.send('a-message','hahah');
-renderLoop();
-
-$('#done').on('click',function() {
-alert('ahaa');
-});
-
-
-
-
-
-$('#selectCamera').on("mousedown",() => {
-
-  cameras = [];
-
-  if(selectedCamera != null)
-    cameras.push(selectedCamera);
-
-  var availableCams = camScribble.getAvailableCameras();
-
-  for(var i=0;i<availableCams.length;i++) {
-    cameras.push(availableCams[i]);
-  }
-
+  // setup openCV camera, and read the first image.
+  camScribble = new CamScribble([800,800],[0,0,0]);
+  var cameras = camScribble.getAvailableCameras();
+  var selectedCamera = null;
   injectDropDown(cameras,'#selectCamera');
 
-});
+  if(cameras.length != 0) {
+    camScribble.setCamera(cameras[0]);
+    selectedCamera = cameras[0];
+  }
 
-$('#selectCamera').on("change", function(event) {
-  var dropDownElement = event.target;
-  var cameraToSelect = dropDownElement[dropDownElement.selectedIndex].value;
-  //console.log();
-  //console.log(event.target[event.target.selectedIndex].value);
-  camScribble.releaseCam();
-  selectCamera = null;
-  camScribble.setCamera(parseInt(cameraToSelect));
 
-  selectedCamera = cameraToSelect;
-  renderLoop();
-});
+  camScribble.getCalibrationFrames(function(image,outputImage){
+    var buf = image.toBuffer();
+    var outputBuffer = outputImage.toBuffer();
 
-//
-// $('#selectCamera').on('click', function() {
-//   if($(this).hasClass('open')) {
-//       alert('it works');
-//   }
-//   //console.log('changed');
-// });
+    var glCan = new GlCanvasForDummies(
+      document.getElementById('canvas'),
+      image.width(),
+      image.height());
 
-//
-// $('#selectCamera').change(() => {
-//    // Camera has changed.
-//    console.log($('#selectCamera').value());
-// });
+    var glCanOutput = new GlCanvasForDummies(
+      document.getElementById('canvas-output'),
+      outputImage.width(),
+      outputImage.height());
+
+
+
+    var perspectivePoints =
+    [
+      [0.25,0.25],
+      [0.75,0.25],
+      [0.25,0.75],
+      [0.75,0.75]
+    ];
+
+    var fs = require('fs');
+    fs.readFile('calibration.config','utf-8',function(err,data){
+      if(!err) {
+        perspectivePoints = JSON.parse(data);
+      }
+
+      camScribble.setPerspective(perspectivePoints);
+
+      // setup the draggables for the UI.
+      setDraggables(perspectivePoints,image.width(),image.height(),function(name,x,y) {
+
+        perspectivePoints[name][0] = x;
+        perspectivePoints[name][1] = y;
+
+        camScribble.setPerspective(perspectivePoints);
+      });
+    });
+
+
+
+
+    document.getElementById('canvas-container')
+      .setAttribute("style","width:"+image.width()+"px;height:"+image.height()+"px");
+
+
+    // Enter the rendering loop.
+    function renderLoop() {
+      camScribble.getCalibrationFrames(function(cameraImage,calibratedImage) {
+        buf = cameraImage.toBuffer(buf);
+        outputBuffer = calibratedImage.toBuffer(outputBuffer);
+
+        glCan.renderImage(buf,cameraImage.width(),cameraImage.height());
+        glCanOutput.renderImage(outputBuffer,calibratedImage.width(),calibratedImage.height());
+
+        setTimeout(
+          function() {
+            requestAnimationFrame(renderLoop)
+        },1000/30);
+      });
+    }
+
+
+    $('#done').on('click',function() {
+        var fs = require('fs');
+
+        fs.writeFile('calibration.config',JSON.stringify(perspectivePoints),function(err) {
+          if(err) throw err;
+          console.log('configuration saved.')
+        });
+    });
+
+
+    $('#selectCamera').on("mousedown",() => {
+
+      cameras = [];
+
+      if(selectedCamera != null)
+        cameras.push(selectedCamera);
+
+      var availableCams = camScribble.getAvailableCameras();
+
+      for(var i=0;i<availableCams.length;i++) {
+        cameras.push(availableCams[i]);
+      }
+
+      injectDropDown(cameras,'#selectCamera');
+
+    });
+
+    $('#selectCamera').on("change", function(event) {
+      var dropDownElement = event.target;
+      var cameraToSelect = dropDownElement[dropDownElement.selectedIndex].value;
+      //console.log();
+      //console.log(event.target[event.target.selectedIndex].value);
+      camScribble.releaseCam();
+      selectedCamera = null;
+      camScribble.setCamera(parseInt(cameraToSelect));
+
+      selectedCamera = cameraToSelect;
+      renderLoop();
+    });
+
+
+    ipcRenderer.send('a-message','hahah');
+    renderLoop();
+
+
+
+  });
+
 
 
 });
