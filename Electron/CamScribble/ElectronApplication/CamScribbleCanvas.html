@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body style='width:100%;height:100%'>
+  <canvas id='big-picture' style='width:100%;height:100%'></canvas>
+</body>
+
+<!-- Insert this line above script imports  -->
+<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+<script src="js/jquery.min.js"></script>
+<script>if (window.module) module = window.module;</script>
+
+<script>
+
+
+function showErrorDialogAndExit(message) {
+  const {dialog} = require('electron').remote;
+  dialog.showMessageBox({
+    type:'error',
+    buttons:['Ok'],
+    message: message,
+    cancelId: -1
+  });
+  app.exit();
+}
+
+function init(camScribble) {
+  var fs = require('fs');
+  fs.readFile('calibration.config','utf-8',function(err,data) {
+    if(!err) {
+
+
+      var perspectivePoints = JSON.parse(data);
+      camScribble.setPerspective(perspectivePoints);
+      var cameras = camScribble.getAvailableCameras();
+      if(cameras.length != 0) {
+        camScribble.setCamera(cameras[0]);
+        selectedCamera = cameras[0];
+      } else {
+        showErrorDialogAndExit('No camera found!');
+      }
+
+
+    } else {
+      showErrorDialogAndExit('Unable to read configuration file.');
+    }
+  });
+}
+
+$(document).ready(function() {
+  const GlCanvasForDummies = require('./js/GlCanvasForDummies');
+  const CamScribble = require('cam_scribble').CamScribble;
+  //const {remote,ipcRenderer} = require('electron');
+
+  var camScribble = new CamScribble([800,800],[0,0,0]);
+
+
+
+});
+
+</script>
+</html>

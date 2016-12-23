@@ -25,7 +25,20 @@ function openCalibrationWindow(onCloseCallback) {
 
 
 function startCamScribble() {
-  console.log('starting cam scr');
+  var controlsWindow = new BrowserWindow({
+    width: 250,
+    height: 550,
+    titleBarStyle: 'hidden',
+    resizable: false
+  });
+
+  controlsWindow.loadURL(`file://${__dirname}/CamScribbleControls.html`);
+
+  controlsWindow.setMenu(null);
+
+  controlsWindow.on('closed',() => {
+      win = null;
+  });
 }
 
 
@@ -71,7 +84,6 @@ app.on('ready',main);
 
 
 app.on('window-all-closed',() => {
-    console.log('closed');
     if (process.platform !== 'darwin') {
         app.quit()
     }

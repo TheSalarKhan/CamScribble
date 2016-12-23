@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Controls</title>
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="css/bootstrap-slider.min.css" />
   <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
@@ -19,13 +20,19 @@
   }
 
 
+  .control-buttons {
+    width: 100px;
+    margin: 2px 2px 2px 2px;
+  }
+
+
   </style>
 </head>
 <body>
 
   <div class="container-fluid">
     <div class="row title">
-      <h3>Settings</h3>
+      <h3>Controls</h3>
     </div>
     <hr />
     <div class="row">
@@ -52,7 +59,7 @@
                 data-slider-id='bss-stroke'
                 type="number"
                 data-slider-min="0"
-                data-slider-max="10"
+                data-slider-max="30"
                 data-slider-step="1"
                 data-slider-value="2"/>
             </div>
@@ -100,13 +107,47 @@
               <input
                 type="color"
                 value="#FFFFFF"/>
+            </div><hr />
+
+
+            <!-- Buttons -->
+            <div class="row">
+              <div class="col-xs-6">
+                <a id='cs-undo' class="btn btn-primary control-buttons">
+                  <i class="fa fa-undo"></i>&nbsp;Undo</a>
+              </div>
+              <div class="col-xs-6">
+                <a id='cs-redo' class="btn btn-primary control-buttons">
+                  <i class="fa fa-repeat"></i>&nbsp;Redo</a>
+              </div>
             </div>
-            <div class="row" style="float:right">
-              <a class="btn btn-primary">
-                <i class="fa fa-undo"></i>&nbsp; Undo</a>
-              <a class="btn btn-primary">
-                <i class="fa fa-repeat"></i>&nbsp;Redo</a>
+
+
+            <div class="row">
+              <div class="col-xs-6">
+                <a id='cs-erase' class="btn btn-primary control-buttons">
+                  <i class="fa fa-eraser"></i>&nbsp;Erase</a>
+              </div>
+              <div class="col-xs-6">
+                <a id='cs-clear' class="btn btn-primary control-buttons">
+                  <i class="fa fa-trash-o"></i>&nbsp;Clear</a>
+              </div>
             </div>
+
+
+            <div class="row">
+              <div class="col-xs-6">
+                <a id='cs-export' class="btn btn-primary control-buttons">
+                  <i class="fa fa-save"></i>&nbsp;Export</a>
+              </div>
+              <div class="col-xs-6">
+                <!-- <a class="btn btn-primary control-buttons">
+                  <i class="fa fa-trash-o"></i>&nbsp;Clear</a> -->
+              </div>
+            </div>
+
+
+
           </div>
         </div>
     </div>
@@ -117,19 +158,20 @@
 </body>
 
 <script>
-$(document).ready(function(){
+
+function setupTrackBars() {
   var sliderIds = //['#noise','#stroke','#brightness','#width','#height'];
   [
     {
       id: '#noise',
       formatter: function(value) {
-        return value+'%';
+        return value+'x';
       }
     },
     {
       id: '#stroke',
       formatter: function(value) {
-        return value+'%';
+        return value+'pts';
       }
     },
     {
@@ -158,7 +200,50 @@ $(document).ready(function(){
     	formatter: sliderIds[i].formatter
     });
   }
+}
 
+function setupButtons() {
+  var buttons = [
+    {
+      id: '#cs-undo',
+      onClick: function() {
+        alert("I'm here!");
+      }
+    },
+    {
+      id: '#cs-redo',
+      onClick: function() {
+
+      }
+    },
+    {
+      id: '#cs-erase',
+      onClick: function() {
+
+      }
+    },
+    {
+      id: '#cs-clear',
+      onClick: function() {
+
+      }
+    },
+    {
+      id: '#cs-export',
+      onClick: function() {
+
+      }
+    }
+  ];
+
+  for(var i=0;i<buttons.length;i++) {
+    $(buttons[i].id).on('click',buttons[i].onClick);
+  }
+}
+
+$(document).ready(function(){
+  setupTrackBars();
+  setupButtons();
 });
 
 
