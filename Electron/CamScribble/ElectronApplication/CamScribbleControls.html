@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="css/bootstrap-slider.min.css" />
+  <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
+
+  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
+  <script>if (window.module) module = window.module;</script>
+
+  <style>
+
+  .title {
+    border-radius: 5px 5px 0 0;
+    background-color: #cecece;
+    text-align: center;
+  }
+
+
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid">
+    <div class="row title">
+      <h3>Settings</h3>
+    </div>
+    <hr />
+    <div class="row">
+        <div class="container">
+          <div class="col-xs-12">
+            <div class="row">
+              <label>Noise Supression: </label><br />
+              <input
+                class="bs-slider"
+                id="noise"
+                data-slider-id='bss-noise'
+                type="number"
+                data-slider-min="0"
+                data-slider-max="10"
+                data-slider-step="1"
+                data-slider-value="2"/>
+            </div>
+
+            <div class="row">
+              <label>Stroke: </label><br />
+              <input
+                class="bs-slider"
+                id="stroke"
+                data-slider-id='bss-stroke'
+                type="number"
+                data-slider-min="0"
+                data-slider-max="10"
+                data-slider-step="1"
+                data-slider-value="2"/>
+            </div>
+
+            <div class="row">
+              <label>Brightness: </label><br />
+              <input
+                class="bs-slider"
+                id="brightness"
+                data-slider-id='bss-brightness'
+                type="number"
+                data-slider-min="0"
+                data-slider-max="100"
+                data-slider-step="1"
+                data-slider-value="100"/>
+            </div>
+
+            <div class="row">
+              <label>Width: </label><br />
+              <input
+                class="bs-slider"
+                id="width"
+                data-slider-id='bss-width'
+                type="number"
+                data-slider-min="0"
+                data-slider-max="100"
+                data-slider-step="1"
+                data-slider-value="50"/>
+            </div>
+
+            <div class="row">
+              <label>Height: </label><br />
+              <input
+                class="bs-slider"
+                id="height"
+                data-slider-id='bss-height'
+                type="number"
+                data-slider-min="0"
+                data-slider-max="100"
+                data-slider-step="1"
+                data-slider-value="50"/>
+            </div>
+            <div class="row">
+              <label>Ink Color: </label><br />
+              <input
+                type="color"
+                value="#FFFFFF"/>
+            </div>
+            <div class="row" style="float:right">
+              <a class="btn btn-primary">
+                <i class="fa fa-undo"></i>&nbsp; Undo</a>
+              <a class="btn btn-primary">
+                <i class="fa fa-repeat"></i>&nbsp;Redo</a>
+            </div>
+          </div>
+        </div>
+    </div>
+
+  </div>
+
+
+</body>
+
+<script>
+$(document).ready(function(){
+  var sliderIds = //['#noise','#stroke','#brightness','#width','#height'];
+  [
+    {
+      id: '#noise',
+      formatter: function(value) {
+        return value+'%';
+      }
+    },
+    {
+      id: '#stroke',
+      formatter: function(value) {
+        return value+'%';
+      }
+    },
+    {
+      id: '#brightness',
+      formatter: function(value) {
+        return value+'%';
+      }
+    },
+    {
+      id: '#width',
+      formatter: function(value) {
+        return value+'%';
+      }
+    },
+    {
+      id: '#height',
+      formatter: function(value) {
+        return value+'%';
+      }
+    }
+  ];
+
+  for(var i=0;i<sliderIds.length;i++) {
+    // With JQuery
+    $(sliderIds[i].id).slider({
+    	formatter: sliderIds[i].formatter
+    });
+  }
+
+});
+
+
+</script>
+</html>

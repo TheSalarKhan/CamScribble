@@ -159,7 +159,7 @@ function injectDropDown(data,dropDownId) {
 $(document).ready(function() {
   const GlCanvasForDummies = require('./js/GlCanvasForDummies');
   const CamScribble = require('cam_scribble').CamScribble;
-  const {ipcRenderer} = require('electron');
+  const {remote,ipcRenderer} = require('electron');
 
   // setup openCV camera, and read the first image.
   camScribble = new CamScribble([800,800],[0,0,0]);
@@ -244,7 +244,10 @@ $(document).ready(function() {
 
         fs.writeFile('calibration.config',JSON.stringify(perspectivePoints),function(err) {
           if(err) throw err;
-          console.log('configuration saved.')
+          //console.log('configuration saved.')
+
+          remote.getCurrentWindow().close();
+
         });
     });
 
