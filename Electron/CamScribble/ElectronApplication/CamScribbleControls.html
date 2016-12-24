@@ -158,37 +158,42 @@
 </body>
 
 <script>
-
+const {ipcRenderer} = require('electron');
 function setupTrackBars() {
   var sliderIds = //['#noise','#stroke','#brightness','#width','#height'];
   [
     {
       id: '#noise',
       formatter: function(value) {
+        ipcRenderer.send('cs-controls',{action:'noise',val: value});
         return value+'x';
       }
     },
     {
       id: '#stroke',
       formatter: function(value) {
+        ipcRenderer.send('cs-controls',{action:'stroke',val: value});
         return value+'pts';
       }
     },
     {
       id: '#brightness',
       formatter: function(value) {
+        ipcRenderer.send('cs-controls',{action:'brightness',val: value});
         return value+'%';
       }
     },
     {
       id: '#width',
       formatter: function(value) {
+        ipcRenderer.send('cs-controls',{action:'width',val: value});
         return value+'%';
       }
     },
     {
       id: '#height',
       formatter: function(value) {
+        ipcRenderer.send('cs-controls',{action:'height',val: value});
         return value+'%';
       }
     }
@@ -203,35 +208,37 @@ function setupTrackBars() {
 }
 
 function setupButtons() {
+
+
   var buttons = [
     {
       id: '#cs-undo',
       onClick: function() {
-        alert("I'm here!");
+        ipcRenderer.send('cs-controls',{action:'undo'});
       }
     },
     {
       id: '#cs-redo',
       onClick: function() {
-
+        ipcRenderer.send('cs-controls',{action:'redo'});
       }
     },
     {
       id: '#cs-erase',
       onClick: function() {
-
+        ipcRenderer.send('cs-controls',{action:'erase'});
       }
     },
     {
       id: '#cs-clear',
       onClick: function() {
-
+        ipcRenderer.send('cs-controls',{action:'clear'});
       }
     },
     {
       id: '#cs-export',
       onClick: function() {
-
+        ipcRenderer.send('cs-controls',{action:'export'});
       }
     }
   ];

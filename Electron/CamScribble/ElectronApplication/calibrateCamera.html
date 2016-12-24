@@ -159,7 +159,8 @@ function injectDropDown(data,dropDownId) {
 $(document).ready(function() {
   const GlCanvasForDummies = require('./js/GlCanvasForDummies');
   const CamScribble = require('cam_scribble').CamScribble;
-  const {remote,ipcRenderer} = require('electron');
+  //const {remote,ipcRenderer} = require('electron');
+  const {remote} = require('electron');
 
   // setup openCV camera, and read the first image.
   camScribble = new CamScribble([800,800],[0,0,0]);
@@ -283,7 +284,7 @@ $(document).ready(function() {
     });
 
 
-    ipcRenderer.send('a-message','hahah');
+    //ipcRenderer.send('a-message','hahah');
     renderLoop();
 
 

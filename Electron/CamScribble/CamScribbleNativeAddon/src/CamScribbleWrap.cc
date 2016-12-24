@@ -37,6 +37,8 @@ void CamScribbleWrap::Init(Local<Object> target) {
 
   Nan::SetPrototypeMethod(ctor,"getCalibrationFrames",GetCalibrationFrames);
 
+  Nan::SetPrototypeMethod(ctor,"getBigCanvas",GetBigCanvas);
+
 
   Nan::SetPrototypeMethod(ctor,"getAvailableCameras",GetAvailableCameras);
   Nan::SetPrototypeMethod(ctor,"releaseCam",ReleaseCam);
@@ -529,21 +531,6 @@ class GetClibrationFramesAsyncWorker: public Nan::AsyncWorker {
 
 };
 
-// NAN_METHOD(CamScribbleWrap::GetCameraFrameAsync) {
-//   Nan::HandleScope scope;
-//   CamScribbleWrap *self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
-//
-//   REQ_FUN_ARG(0, cb);
-//
-//   Nan::Callback *callback = new Nan::Callback(cb.As<Function>());
-//   Nan::AsyncQueueWorker(new GetCameraFrameAsyncWorker(callback, self));
-//
-//   return;
-// }
-
-
-
-
 NAN_METHOD(CamScribbleWrap::GetCalibrationFrames) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
@@ -557,6 +544,103 @@ NAN_METHOD(CamScribbleWrap::GetCalibrationFrames) {
   Nan::AsyncQueueWorker(new GetClibrationFramesAsyncWorker(callback, self));
 
   // return nothing;
+}
+
+
+// This class describes the thread that's created
+// when a call to GetBigCanvas is made.
+class GetBigCanvasAsyncWorker: public Nan::AsyncWorker {
+  public: GetBigCanvasAsyncWorker(Nan::Callback *callback, CamScribbleWrap* self) :
+      Nan::AsyncWorker(callback),
+      self(self) {
+  }
+
+  public: ~GetBigCanvasAsyncWorker() {
+  }
+
+  // Executed inside the worker-thread.
+  // It is not safe to access V8, or V8 data structures
+  // here, so everything we need for input and output
+  // should go on `this`.
+  public: void Execute() {
+
+    uv_mutex_lock(&(self->mutex));
+    {
+      if(self->cameraIndex == -1) {
+        this->success = false;
+        uv_mutex_unlock(&(self->mutex));
+        return;
+      }
+
+      try {
+        // read a frame from the camera
+        if(self->camera.read(self->cameraImage)) {
+
+          // pass it through the bigCanvas pipeline, and
+          // convert it to RGB format.
+          self->canvas.getFrame(self->cameraImage, self->outputImage);
+          cv::cvtColor(self->outputImage,self->outputImage,CV_BGR2RGB);
+
+
+          this->success = true;
+        } else {
+          this->success = false;
+        }
+      } catch(cv::Exception& e) {
+        this->success = false;
+        uv_mutex_unlock(&(self->mutex));
+        return;
+      }
+    }
+
+    uv_mutex_unlock(&(self->mutex));
+  }
+
+  // Executed when the async work is complete
+  // this function will be run inside the main event loop
+  // so it is safe to use V8 again
+  void HandleOKCallback() {
+    Nan::HandleScope scope;
+
+    if(!this->success) {
+      return Nan::ThrowError("Error! cannot get frame without camera input. \nPlease call '.setCamera()' with an appropriate cam id before calling getCalibrationFrames() again.");
+    }
+
+    Local<Object> cameraImageToReturn= Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(cameraImageToReturn);
+    img->mat = self->outputImage;
+
+
+    // Local<Object> perspectiveCorrectionImage= Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+    // img = Nan::ObjectWrap::Unwrap<Matrix>(perspectiveCorrectionImage);
+    // img->mat = self->smallCanvasImage;
+
+    Local<Value> argv[] = {
+      cameraImageToReturn
+      // perspectiveCorrectionImage
+    };
+
+    Nan::TryCatch try_catch;
+    callback->Call(1, argv);
+    if (try_catch.HasCaught()) {
+      Nan::FatalException(try_catch);
+    }
+  }
+
+  private: CamScribbleWrap *self;
+  private: bool success;
+
+};
+
+NAN_METHOD(CamScribbleWrap::GetBigCanvas) {
+  Nan::HandleScope scope;
+  CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
+
+  REQ_FUN_ARG(0, cb);
+
+  Nan::Callback *callback = new Nan::Callback(cb.As<Function>());
+
+  Nan::AsyncQueueWorker(new GetBigCanvasAsyncWorker(callback, self));
 }
 
 

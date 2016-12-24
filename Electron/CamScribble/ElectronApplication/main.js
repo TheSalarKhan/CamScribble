@@ -25,20 +25,54 @@ function openCalibrationWindow(onCloseCallback) {
 
 
 function startCamScribble() {
-  var controlsWindow = new BrowserWindow({
-    width: 250,
-    height: 550,
-    titleBarStyle: 'hidden',
-    resizable: false
+  var canvasWindow = null;
+  var controlsWindow = null;
+
+  function openControlWindow() {
+    controlsWindow = new BrowserWindow({
+      width: 250,
+      height: 550,
+      titleBarStyle: 'hidden',
+      resizable: false
+    });
+
+    controlsWindow.loadURL(`file://${__dirname}/CamScribbleControls.html`);
+
+    controlsWindow.setMenu(null);
+
+    controlsWindow.on('closed',() => {
+        win = null;
+    });
+  }
+
+  function openBigCanvas() {
+    canvasWindow = new BrowserWindow({
+      width: 600,
+      height: 615,
+      titleBarStyle: 'hidden',
+      resizable: false,
+      frame:false
+    });
+
+    canvasWindow.loadURL(`file://${__dirname}/CamScribbleCanvas.html`);
+
+    //canvasWindow.setMenu(null);
+
+    canvasWindow.on('closed',() => {
+        win = null;
+    });
+  }
+
+  openControlWindow();
+  openBigCanvas();
+
+  // Whenever we recieve an object from
+  // the controls window, we pass it to
+  // canvas window.
+  ipcMain.on('cs-controls', (event, arg) => {
+    canvasWindow.webContents.send('cs-controls',arg);
   });
 
-  controlsWindow.loadURL(`file://${__dirname}/CamScribbleControls.html`);
-
-  controlsWindow.setMenu(null);
-
-  controlsWindow.on('closed',() => {
-      win = null;
-  });
 }
 
 
@@ -96,11 +130,3 @@ app.on('activate', () => {
         main();
     }
 });
-
-
-
-
-ipcMain.on('a-message', (event, arg) => {
-  console.log(arg)  // prints "ping"
-  //event.returnValue = 'pong'
-})

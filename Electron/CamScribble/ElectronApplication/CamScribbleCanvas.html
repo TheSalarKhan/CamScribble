@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <style>
+    #title-bar {
+      width:100%;
+      height:15px;
+      background-color:#ff0000;
+      -webkit-app-region: drag
+    }
+  </style>
 </head>
-<body style='width:100%;height:100%'>
+<body style='margin:0px;overflow:hidden;'>
+  <div id='title-bar'></div>
   <canvas id='big-picture' style='width:100%;height:100%'></canvas>
 </body>
 
@@ -12,6 +21,10 @@
 <script>if (window.module) module = window.module;</script>
 
 <script>
+const GlCanvasForDummies = require('./js/GlCanvasForDummies');
+const CamScribble = require('cam_scribble').CamScribble;
+const {ipcRenderer} = require('electron');
+
 
 
 function showErrorDialogAndExit(message) {
@@ -25,38 +38,96 @@ function showErrorDialogAndExit(message) {
   app.exit();
 }
 
-function init(camScribble) {
-  var fs = require('fs');
-  fs.readFile('calibration.config','utf-8',function(err,data) {
-    if(!err) {
 
-
-      var perspectivePoints = JSON.parse(data);
-      camScribble.setPerspective(perspectivePoints);
-      var cameras = camScribble.getAvailableCameras();
-      if(cameras.length != 0) {
-        camScribble.setCamera(cameras[0]);
-        selectedCamera = cameras[0];
-      } else {
-        showErrorDialogAndExit('No camera found!');
-      }
-
-
-    } else {
-      showErrorDialogAndExit('Unable to read configuration file.');
+function setupIPCControls(camScribble) {
+  ipcRenderer.on('cs-controls',function(event, data) {
+    switch(data.action) {
+      case 'undo':
+        camScribble.undo();
+        break;
+      case 'redo':
+        camScribble.redo();
+        break;
+      case 'erase':
+        break;
+      case 'clear':
+        break;
+      case 'export':
+        break;
+      case 'noise':
+        break;
+      case 'stroke':
+        break;
+      case 'brightness':
+        break;
+      case 'width':
+        break;
+      case 'height':
+        break;
     }
   });
 }
 
+function init(camScribble) {
+  var fs = require('fs');
+  fs.readFile('calibration.config','utf-8',function(err,data) {
+
+    if(err) {
+      showErrorDialogAndExit('Unable to read configuration file');
+    }
+
+    var perspectivePoints = JSON.parse(data);
+    camScribble.setPerspective(perspectivePoints);
+    var cameras = camScribble.getAvailableCameras();
+
+    if(cameras.length == 0) {
+      showErrorDialogAndExit('No camera found!');
+    }
+
+    camScribble.setCamera(cameras[0]);
+    selectedCamera = cameras[0];
+
+
+    var buffer = null;
+    camScribble.getBigCanvas(function(image) {
+      var buf = image.toBuffer();
+
+      var glCan = new GlCanvasForDummies(
+        document.getElementById('big-picture'),
+        image.width(),
+        image.height());
+
+      document.getElementById('big-picture')
+        .setAttribute("style","width:"+image.width()+"px;height:"+image.height()+"px");
+
+
+      function renderLoop() {
+        camScribble.getBigCanvas(function(image) {
+          buf = image.toBuffer(buf);
+          glCan.renderImage(buf,image.width(),image.height());
+
+          setTimeout(
+            function() {
+              requestAnimationFrame(renderLoop)
+          },1000/30);
+        });
+      }
+      // Enter the rendering
+      renderLoop();
+    });
+
+
+    setupIPCControls(camScribble);
+  });
+}
+
 $(document).ready(function() {
-  const GlCanvasForDummies = require('./js/GlCanvasForDummies');
-  const CamScribble = require('cam_scribble').CamScribble;
+
   //const {remote,ipcRenderer} = require('electron');
 
-  var camScribble = new CamScribble([800,800],[0,0,0]);
+  var camScribble = new CamScribble([600,600],[0,0,0]);
 
-
-
+  init(camScribble);
 });
 
 </script>

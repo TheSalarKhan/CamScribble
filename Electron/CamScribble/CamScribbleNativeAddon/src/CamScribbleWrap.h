@@ -83,4 +83,6 @@ public:
 
   static NAN_METHOD(GetCalibrationFrames);
 
+  static NAN_METHOD(GetBigCanvas);
+
 };
