@@ -85,4 +85,6 @@ public:
 
   static NAN_METHOD(GetBigCanvas);
 
+  static NAN_METHOD(ClearBigCanvas);
+
 };

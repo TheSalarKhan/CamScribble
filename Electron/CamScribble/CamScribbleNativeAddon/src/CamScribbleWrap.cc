@@ -39,6 +39,8 @@ void CamScribbleWrap::Init(Local<Object> target) {
 
   Nan::SetPrototypeMethod(ctor,"getBigCanvas",GetBigCanvas);
 
+  Nan::SetPrototypeMethod(ctor,"clearBigCanvas",ClearBigCanvas);
+
 
   Nan::SetPrototypeMethod(ctor,"getAvailableCameras",GetAvailableCameras);
   Nan::SetPrototypeMethod(ctor,"releaseCam",ReleaseCam);
@@ -643,7 +645,13 @@ NAN_METHOD(CamScribbleWrap::GetBigCanvas) {
   Nan::AsyncQueueWorker(new GetBigCanvasAsyncWorker(callback, self));
 }
 
+NAN_METHOD(CamScribbleWrap::ClearBigCanvas) {
+  Nan::HandleScope scope;
+  CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
+  self->canvas.clear();
+
+}
 NAN_METHOD(CamScribbleWrap::GetSmallCanvas) {
 
 

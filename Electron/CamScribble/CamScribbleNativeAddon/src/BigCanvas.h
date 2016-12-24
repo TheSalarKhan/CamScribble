@@ -31,6 +31,7 @@ public:
 	void setHeight(float percntage);
 	void setPerspective(std::vector<Point2f> points);
 	void lock();
+	void clear();
 	virtual ~BigCanvas();
 
 private:
@@ -56,6 +57,8 @@ private:
 
 
 	Point3f _foregroundColor;
+
+	Scalar _backgroundColor;
 
 	// Retina filter and its settings
 	RetinaFilter _retinaFilter;

@@ -4,14 +4,14 @@
   <style>
     #title-bar {
       width:100%;
-      height:15px;
+      height:25px;
       background-color:#ff0000;
       -webkit-app-region: drag
     }
   </style>
 </head>
 <body style='margin:0px;overflow:hidden;'>
-  <div id='title-bar'>Click to Drag</div>
+  <div id='title-bar'></div>
   <canvas id='big-picture' style='width:100%;height:100%'></canvas>
 </body>
 
@@ -27,6 +27,54 @@ const {ipcRenderer} = require('electron');
 
 
 
+function setupMouseDragOnCanvas(camScribble) {
+  var canvas = document.getElementById('big-picture');
+  var rect = canvas.getBoundingClientRect();
+  var flag = false;
+  var position = [0.5,0.5];
+
+  function handleMouseEvent(type,event) {
+    switch(type) {
+      case 'mouseup':
+      case 'mouseout':
+        flag = false;
+        break;
+      case 'mousedown':
+        flag = true;
+        position[0] = (event.clientX - rect.left)/(rect.width);
+        position[1] = (event.clientY - rect.top)/(rect.height);
+
+        break;
+      case 'mousemove':
+        if(flag) {
+          position[0] = (event.clientX - rect.left)/(rect.width);
+          position[1] = (event.clientY - rect.top)/(rect.height);
+        }
+
+        break;
+    }
+
+    if(flag) {
+      camScribble.setPosition(position[0],position[1]);
+
+    }
+  }
+
+  canvas.addEventListener("mousemove", function (e) {
+      handleMouseEvent('mousemove', e)
+  }, false);
+  canvas.addEventListener("mousedown", function (e) {
+      handleMouseEvent('mousedown', e)
+  }, false);
+  canvas.addEventListener("mouseup", function (e) {
+      handleMouseEvent('mouseup', e)
+  }, false);
+  canvas.addEventListener("mouseout", function (e) {
+      handleMouseEvent('mouseout', e)
+  }, false);
+
+}
+
 function showErrorDialogAndExit(message) {
   const {dialog} = require('electron').remote;
   dialog.showMessageBox({
@@ -37,7 +85,6 @@ function showErrorDialogAndExit(message) {
   });
   app.exit();
 }
-
 
 function setupIPCControls(camScribble) {
   ipcRenderer.on('cs-controls',function(event, data) {
@@ -51,6 +98,7 @@ function setupIPCControls(camScribble) {
       case 'erase':
         break;
       case 'clear':
+        camScribble.clearBigCanvas();
         break;
       case 'export':
         break;
@@ -100,6 +148,9 @@ function init(camScribble) {
       document.getElementById('big-picture')
         .setAttribute("style","width:"+image.width()+"px;height:"+image.height()+"px");
 
+      // Setup mouse movement calback after
+      // the canvas has been resized.
+      setupMouseDragOnCanvas(camScribble);
 
       function renderLoop() {
         camScribble.getBigCanvas(function(image) {
@@ -114,16 +165,18 @@ function init(camScribble) {
       }
       // Enter the rendering
       renderLoop();
+
+
     });
 
 
     setupIPCControls(camScribble);
+
+
   });
 }
 
 $(document).ready(function() {
-
-  //const {remote,ipcRenderer} = require('electron');
 
   var camScribble = new CamScribble([600,600],[0,0,0]);
 

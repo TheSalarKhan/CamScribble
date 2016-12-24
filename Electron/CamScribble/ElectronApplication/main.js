@@ -2,6 +2,18 @@ const {app, BrowserWindow,ipcMain} = require('electron');
 const CamScribble = require('cam_scribble').CamScribble;
 
 
+function areYouSureYouWantToExit(window) {
+  const {dialog} = require('electron');
+
+  var value = dialog.showMessageBox(window,{
+    type:'question',
+    message:'Are you sure you want to exit?',
+    buttons:['Yes','No'],
+    cancelId: -1
+  });
+
+  return (value == 0);
+}
 
 function openCalibrationWindow(onCloseCallback) {
   var calibrationWindow = new BrowserWindow({
@@ -17,10 +29,14 @@ function openCalibrationWindow(onCloseCallback) {
 
   //calibrationWindow.webContents.openDevTools();
 
-  calibrationWindow.on('closed',() => {
-      win = null;
-      onCloseCallback();
+  calibrationWindow.on('close',() => {
+    // /console.log('opening application');
+    onCloseCallback();
   });
+
+  calibrationWindow.on('closed',() => {
+    win = null;
+  })
 }
 
 
@@ -40,6 +56,15 @@ function startCamScribble() {
 
     controlsWindow.setMenu(null);
 
+    controlsWindow.on('close',function(e) {
+      if(areYouSureYouWantToExit(controlsWindow)) {
+        canvasWindow.preventClose = false;
+        canvasWindow.close();
+      } else {
+        e.preventDefault();
+      }
+    });
+
     controlsWindow.on('closed',() => {
         win = null;
     });
@@ -48,16 +73,23 @@ function startCamScribble() {
   function openBigCanvas() {
     canvasWindow = new BrowserWindow({
       width: 600,
-      height: 615,
+      height: 625,
       titleBarStyle: 'hidden',
       resizable: false,
-      frame:false
+      frame: false
     });
+
+    canvasWindow.preventClose = true;
 
     canvasWindow.loadURL(`file://${__dirname}/CamScribbleCanvas.html`);
 
     //canvasWindow.setMenu(null);
+    //canvasWindow.webContents.openDevTools();
 
+    canvasWindow.on('close',function(e) {
+      if(canvasWindow.preventClose)
+        e.preventDefault();
+    });
     canvasWindow.on('closed',() => {
         win = null;
     });
@@ -71,6 +103,10 @@ function startCamScribble() {
   // canvas window.
   ipcMain.on('cs-controls', (event, arg) => {
     canvasWindow.webContents.send('cs-controls',arg);
+  });
+
+  ipcMain.on('debugging-logs',(event,arg) => {
+    console.log(arg);
   });
 
 }
@@ -92,6 +128,8 @@ function checkForConfigurationAndStart() {
 
       switch(value) {
         case -1:
+          app.quit();
+          break;
         case 0:
           startCamScribble();
           break;

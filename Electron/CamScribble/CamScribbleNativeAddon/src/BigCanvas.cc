@@ -38,6 +38,8 @@ BigCanvas::BigCanvas(Size sizeOfBigCanvas,Scalar backgroundColor,std::vector<Poi
 	// and dimensions.
 	_bigCanvas = Mat(sizeOfBigCanvas,CV_8UC3,backgroundColor);
 
+	_backgroundColor = backgroundColor;
+
 	// setup perspective transform
 	setPerspective(points);
 
@@ -106,7 +108,7 @@ void BigCanvas::getSmallCanvas(const Mat& inputImage, Mat& outputImage) {
 	_retinaFilter.getPerspectiveCorrection().applyPerspectiveCorrection(inputImage,outputImage);
 
 	cv::resize(outputImage,outputImage,Size(200,200));
-	
+
 }
 
 void BigCanvas::getFrame(const Mat& inputImage,Mat& outputImage) {
@@ -159,6 +161,17 @@ void BigCanvas::getFrame(const Mat& inputImage,Mat& outputImage) {
 	mergeIntoBGR(bgr[2],bgr[1],bgr[0],outputImage);
 }
 
+void BigCanvas::clear() {
+	// save the current big canvas
+	// to the undo stack. And clear the redo stack.
+	Mat oldBigCanvas;
+	_bigCanvas.copyTo(oldBigCanvas);
+	_undoStack.push_back(oldBigCanvas);
+	_redoStack.clear();
+
+	// re initialize the big canvas
+	_bigCanvas = Mat(_bigCanvas.size(),CV_8UC3,_backgroundColor);
+}
 
 void BigCanvas::lock() {
 	// save the current big canvas
