@@ -77,13 +77,16 @@ function setupMouseDragOnCanvas(camScribble) {
 
 function showErrorDialogAndExit(message) {
   const {dialog} = require('electron').remote;
+  const {remote} = require('electron').remote;
+
   dialog.showMessageBox({
     type:'error',
     buttons:['Ok'],
     message: message,
     cancelId: -1
   });
-  app.exit();
+
+  ipcRenderer.send('application-control-message','exit');
 }
 
 function setupIPCControls(camScribble) {
@@ -103,14 +106,19 @@ function setupIPCControls(camScribble) {
       case 'export':
         break;
       case 'noise':
+        camScribble.setNoise(data.val);
         break;
       case 'stroke':
+        camScribble.setStrokeWidth(data.val);
         break;
       case 'brightness':
+        camScribble.setBrightness(data.val);
         break;
       case 'width':
+        camScribble.setWidth(data.val);
         break;
       case 'height':
+        camScribble.setHeight(data.val);
         break;
     }
   });
@@ -124,16 +132,32 @@ function init(camScribble) {
       showErrorDialogAndExit('Unable to read configuration file');
     }
 
-    var perspectivePoints = JSON.parse(data);
+
+    var configuration = JSON.parse(data);
+    var perspectivePoints = configuration.perspectiveCorrection;
+
+
+
     camScribble.setPerspective(perspectivePoints);
     var cameras = camScribble.getAvailableCameras();
-
     if(cameras.length == 0) {
       showErrorDialogAndExit('No camera found!');
     }
 
-    camScribble.setCamera(cameras[0]);
-    selectedCamera = cameras[0];
+
+    var cameraFound = false;
+    for(var i=0;i<cameras.length;i++) {
+      if(cameras[i] == parseInt(configuration.camera)) {
+        cameraFound = true;
+      }
+    }
+
+    if(!cameraFound) {
+      showErrorDialogAndExit('Camera not found! Consider re-calibrating.');
+    }
+
+    camScribble.setCamera(parseInt(configuration.camera));
+    selectedCamera = parseInt(configuration.camera);
 
 
     var buffer = null;

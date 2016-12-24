@@ -159,7 +159,7 @@ function injectDropDown(data,dropDownId) {
 $(document).ready(function() {
   const GlCanvasForDummies = require('./js/GlCanvasForDummies');
   const CamScribble = require('cam_scribble').CamScribble;
-  //const {remote,ipcRenderer} = require('electron');
+  const {ipcRenderer} = require('electron');
   const {remote} = require('electron');
 
   // setup openCV camera, and read the first image.
@@ -201,7 +201,10 @@ $(document).ready(function() {
     var fs = require('fs');
     fs.readFile('calibration.config','utf-8',function(err,data){
       if(!err) {
-        perspectivePoints = JSON.parse(data);
+        var configuration = JSON.parse(data);
+        perspectivePoints = configuration.perspectiveCorrection;
+        camScribble.releaseCam();
+        camScribble.setCamera(parseInt(configuration.camera));
       }
 
       camScribble.setPerspective(perspectivePoints);
@@ -234,7 +237,7 @@ $(document).ready(function() {
 
         setTimeout(
           function() {
-            requestAnimationFrame(renderLoop)
+            requestAnimationFrame(renderLoop);
         },1000/30);
       });
     }
@@ -243,7 +246,12 @@ $(document).ready(function() {
     $('#done').on('click',function() {
         var fs = require('fs');
 
-        fs.writeFile('calibration.config',JSON.stringify(perspectivePoints),function(err) {
+        var configuration = {
+          perspectiveCorrection: perspectivePoints,
+          camera: selectedCamera
+        };
+
+        fs.writeFile('calibration.config',JSON.stringify(configuration),function(err) {
           if(err) throw err;
           //console.log('configuration saved.')
 

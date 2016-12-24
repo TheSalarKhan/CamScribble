@@ -105,9 +105,7 @@ function startCamScribble() {
     canvasWindow.webContents.send('cs-controls',arg);
   });
 
-  ipcMain.on('debugging-logs',(event,arg) => {
-    console.log(arg);
-  });
+
 
 }
 
@@ -167,4 +165,16 @@ app.on('activate', () => {
     if(win==null) {
         main();
     }
+});
+
+ipcMain.on('debugging-logs',(event,arg) => {
+  console.log(arg);
+});
+
+ipcMain.on('application-control-message',(event,arg) => {
+  switch(arg) {
+    case 'exit':
+      app.quit();
+      break;
+  }
 });

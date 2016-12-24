@@ -179,21 +179,21 @@ function setupTrackBars() {
     {
       id: '#brightness',
       formatter: function(value) {
-        ipcRenderer.send('cs-controls',{action:'brightness',val: value});
+        ipcRenderer.send('cs-controls',{action:'brightness',val: value/100.0});
         return value+'%';
       }
     },
     {
       id: '#width',
       formatter: function(value) {
-        ipcRenderer.send('cs-controls',{action:'width',val: value});
+        ipcRenderer.send('cs-controls',{action:'width',val: value/100.0});
         return value+'%';
       }
     },
     {
       id: '#height',
       formatter: function(value) {
-        ipcRenderer.send('cs-controls',{action:'height',val: value});
+        ipcRenderer.send('cs-controls',{action:'height',val: value/100.0});
         return value+'%';
       }
     }
