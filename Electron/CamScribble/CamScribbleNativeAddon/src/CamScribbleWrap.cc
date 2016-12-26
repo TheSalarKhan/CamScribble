@@ -2,7 +2,16 @@
 #include "Matrix.h"
 #include <vector>
 
+// Define macros for locking CamScribbleWrap objects
+// its more readable this way. To lock a CamScribbleWrap object
+// simply call ACQUIRE_MUTEX_LOCK(obj) where obj is a pointer to the
+// CamScribbleWrap object that you wish to lock.
+#define ACQUIRE_MUTEX_LOCK(x) uv_mutex_lock(&(x->mutex));
+#define RELEASE_MUTEX_LOCK(x) uv_mutex_unlock(&(x->mutex));
+
 Nan::Persistent<FunctionTemplate> CamScribbleWrap::constructor;
+
+
 
 void CamScribbleWrap::Init(Local<Object> target) {
   Nan::HandleScope scope;
@@ -107,14 +116,12 @@ CamScribbleWrap::CamScribbleWrap(cv::Size canvasSize,cv::Scalar backgroundColor)
 
   // initialize libuv mutex and condition variables.
   uv_mutex_init(&mutex);
-  uv_cond_init(&cv);
 }
 
 CamScribbleWrap::~CamScribbleWrap() {
 
   // destroy libuv mutex and condition variables.
   uv_mutex_destroy(&mutex);
-  uv_cond_destroy(&cv);
 }
 
 // give normalized co-ordinates, in the order:
@@ -158,8 +165,10 @@ NAN_METHOD(CamScribbleWrap::SetPerspective) {
   points.push_back(Point2f(bottomLeft->Get(0)->NumberValue(),bottomLeft->Get(1)->NumberValue()));
   points.push_back(Point2f(bottomRight->Get(0)->NumberValue(),bottomRight->Get(1)->NumberValue()));
 
-  self->canvas.setPerspective(points);
 
+  ACQUIRE_MUTEX_LOCK(self);
+  self->canvas.setPerspective(points);
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::SetNoise) {
@@ -170,7 +179,9 @@ NAN_METHOD(CamScribbleWrap::SetNoise) {
     return Nan::ThrowError("Error! This function requires exactly one integer as an argument.");
   }
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.setNoise(info[0]->IntegerValue());
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::SetStrokeWidth) {
@@ -181,7 +192,10 @@ NAN_METHOD(CamScribbleWrap::SetStrokeWidth) {
     return Nan::ThrowError("Error! This function requires exactly one integer as an argument.");
   }
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.setStrokeWidth(info[0]->IntegerValue());
+  RELEASE_MUTEX_LOCK(self);
+
 }
 
 NAN_METHOD(CamScribbleWrap::SetBrightness) {
@@ -192,7 +206,9 @@ NAN_METHOD(CamScribbleWrap::SetBrightness) {
     return Nan::ThrowError("Error! This function requires exactly one float as an argument.");
   }
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.setBrightness((float)info[0]->NumberValue());
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::SetHeight) {
@@ -203,8 +219,9 @@ NAN_METHOD(CamScribbleWrap::SetHeight) {
     return Nan::ThrowError("Error! This function requires exactly one float as an argument.");
   }
 
-
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.setHeight((float)info[0]->NumberValue());
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::SetWidth) {
@@ -215,8 +232,9 @@ NAN_METHOD(CamScribbleWrap::SetWidth) {
     return Nan::ThrowError("Error! This function requires exactly one float as an argument.");
   }
 
-
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.setWidth((float)info[0]->NumberValue());
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::SetInkColor) {
@@ -236,7 +254,9 @@ NAN_METHOD(CamScribbleWrap::SetInkColor) {
   int g = info[1]->IntegerValue();
   int b = info[2]->IntegerValue();
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.setInkColor(cv::Point3f(r/255.0,g/255.0,b/255.0));
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::SetPosition) {
@@ -254,29 +274,36 @@ NAN_METHOD(CamScribbleWrap::SetPosition) {
   float positionx = (float) info[0]->NumberValue();
   float positiony = (float) info[1]->NumberValue();
 
-
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.setPosition(Point2f(positionx,positiony));
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::Lock) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.lock();
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::Undo) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.undo();
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::Redo) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.redo();
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::ExportAsImage) {
@@ -290,7 +317,9 @@ NAN_METHOD(CamScribbleWrap::ExportAsImage) {
 
   std::string filePath = std::string(*Nan::Utf8String(info[0]->ToString()));
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.exportAsImage(filePath);
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::SetCamera) {
@@ -302,7 +331,7 @@ NAN_METHOD(CamScribbleWrap::SetCamera) {
       return Nan::ThrowError("Error! This function takes in exactly one integer - the camera Id.");
   }
 
-  uv_mutex_lock(&(self->mutex));
+  ACQUIRE_MUTEX_LOCK(self);
   {
     // if the camera is open release it.
     if(self->cameraIndex != -1) {
@@ -322,11 +351,11 @@ NAN_METHOD(CamScribbleWrap::SetCamera) {
       self->cameraIndex = -1;
       std::string message = "cannot open camera "+std::to_string(cameraId)+". It might be in use or not present.";
 
-      uv_mutex_unlock(&(self->mutex));
+      RELEASE_MUTEX_LOCK(self);
       return Nan::ThrowError(message.c_str());
     }
   }
-  uv_mutex_unlock(&(self->mutex));
+  RELEASE_MUTEX_LOCK(self);
 
 
 }
@@ -335,21 +364,21 @@ NAN_METHOD(CamScribbleWrap::ReleaseCam) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
-  uv_mutex_lock(&(self->mutex));
+  ACQUIRE_MUTEX_LOCK(self);
   {
     if(self->cameraIndex != -1) {
       self->camera.release();
       self->cameraIndex = -1;
     }
   }
-  uv_mutex_unlock(&(self->mutex));
+  RELEASE_MUTEX_LOCK(self);
 }
 
 NAN_METHOD(CamScribbleWrap::GetAvailableCameras) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
-  uv_mutex_lock(&(self->mutex));
+  ACQUIRE_MUTEX_LOCK(self);
   {
     std::vector<int> cameras = self->countCameras();
     //int count = self->countCameras();
@@ -362,7 +391,7 @@ NAN_METHOD(CamScribbleWrap::GetAvailableCameras) {
 
     info.GetReturnValue().Set(cameraList);
   }
-  uv_mutex_unlock(&(self->mutex));
+  RELEASE_MUTEX_LOCK(self);
 }
 
 
@@ -376,36 +405,38 @@ NAN_METHOD(CamScribbleWrap::GetFrame) {
     return Nan::ThrowError("Error! cannot get frame without camera input. \nPlease call '.setCamera()' with an appropriate cam id before calling this function again.");
   }
 
+  ACQUIRE_MUTEX_LOCK(self);
+  {
+    // read a frame from the camera
+    self->camera.read(self->cameraImage);
 
-  // read a frame from the camera
-  self->camera.read(self->cameraImage);
+    // pass it through the bigCanvas pipeline, and
+    // convert it to RGB format.
+    self->canvas.getFrame(self->cameraImage, self->outputImage);
+    cv::cvtColor(self->outputImage,self->outputImage,CV_BGR2RGB);
 
-  // pass it through the bigCanvas pipeline, and
-  // convert it to RGB format.
-  self->canvas.getFrame(self->cameraImage, self->outputImage);
-  cv::cvtColor(self->outputImage,self->outputImage,CV_BGR2RGB);
+    if(info.Length() != 1) {
 
+      Local<Object> toReturn =
+        Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
 
-  if(info.Length() != 1) {
+      Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
 
-    Local<Object> toReturn =
-      Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+      img->mat = self->outputImage;
 
-    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
+      info.GetReturnValue().Set(toReturn);
+      RELEASE_MUTEX_LOCK(self);
+      return;
+    }
+
+    Local<Object> passed = info[0]->ToObject();
+    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(passed);
 
     img->mat = self->outputImage;
 
-    info.GetReturnValue().Set(toReturn);
-
-    return;
+    info.GetReturnValue().Set(passed);
   }
-
-  Local<Object> passed = info[0]->ToObject();
-  Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(passed);
-
-  img->mat = self->outputImage;
-
-  info.GetReturnValue().Set(passed);
+  RELEASE_MUTEX_LOCK(self);
 
 }
 
@@ -419,32 +450,39 @@ NAN_METHOD(CamScribbleWrap::GetCameraFrame) {
     return Nan::ThrowError("Error! cannot get frame without camera input. \nPlease call '.setCamera()' with an appropriate cam id before calling this function again.");
   }
 
-  // read a frame from the camera
-  self->camera.read(self->cameraImage);
 
-  // convert to RGB
-  cv::cvtColor(self->cameraImage,self->cameraImage,CV_BGR2RGB);
+  ACQUIRE_MUTEX_LOCK(self);
+  {
+    // read a frame from the camera
+    self->camera.read(self->cameraImage);
 
-  if(info.Length() != 1) {
+    // convert to RGB
+    cv::cvtColor(self->cameraImage,self->cameraImage,CV_BGR2RGB);
 
-    Local<Object> toReturn =
-      Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+    if(info.Length() != 1) {
 
-    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
+      Local<Object> toReturn =
+        Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+
+      Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
+
+      img->mat = self->cameraImage;
+
+      info.GetReturnValue().Set(toReturn);
+
+      RELEASE_MUTEX_LOCK(self);
+      return;
+    }
+
+    Local<Object> passed = info[0]->ToObject();
+    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(passed);
 
     img->mat = self->cameraImage;
 
-    info.GetReturnValue().Set(toReturn);
-
-    return;
+    info.GetReturnValue().Set(passed);
   }
+  RELEASE_MUTEX_LOCK(self);
 
-  Local<Object> passed = info[0]->ToObject();
-  Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(passed);
-
-  img->mat = self->cameraImage;
-
-  info.GetReturnValue().Set(passed);
 
 }
 
@@ -466,11 +504,11 @@ class GetClibrationFramesAsyncWorker: public Nan::AsyncWorker {
   // should go on `this`.
   public: void Execute() {
 
-    uv_mutex_lock(&(self->mutex));
+    ACQUIRE_MUTEX_LOCK(self);
     {
       if(self->cameraIndex == -1) {
         this->success = false;
-        uv_mutex_unlock(&(self->mutex));
+        RELEASE_MUTEX_LOCK(self);
         return;
       }
 
@@ -489,12 +527,12 @@ class GetClibrationFramesAsyncWorker: public Nan::AsyncWorker {
         }
       } catch(cv::Exception& e) {
         this->success = false;
-        uv_mutex_unlock(&(self->mutex));
+        RELEASE_MUTEX_LOCK(self);
         return;
       }
     }
 
-    uv_mutex_unlock(&(self->mutex));
+    RELEASE_MUTEX_LOCK(self);
   }
 
   // Executed when the async work is complete
@@ -566,11 +604,11 @@ class GetBigCanvasAsyncWorker: public Nan::AsyncWorker {
   // should go on `this`.
   public: void Execute() {
 
-    uv_mutex_lock(&(self->mutex));
+    ACQUIRE_MUTEX_LOCK(self);
     {
       if(self->cameraIndex == -1) {
         this->success = false;
-        uv_mutex_unlock(&(self->mutex));
+        RELEASE_MUTEX_LOCK(self);
         return;
       }
 
@@ -590,12 +628,12 @@ class GetBigCanvasAsyncWorker: public Nan::AsyncWorker {
         }
       } catch(cv::Exception& e) {
         this->success = false;
-        uv_mutex_unlock(&(self->mutex));
+        RELEASE_MUTEX_LOCK(self);
         return;
       }
     }
 
-    uv_mutex_unlock(&(self->mutex));
+    RELEASE_MUTEX_LOCK(self);
   }
 
   // Executed when the async work is complete
@@ -649,9 +687,12 @@ NAN_METHOD(CamScribbleWrap::ClearBigCanvas) {
   Nan::HandleScope scope;
   CamScribbleWrap* self = Nan::ObjectWrap::Unwrap<CamScribbleWrap>(info.This());
 
+  ACQUIRE_MUTEX_LOCK(self);
   self->canvas.clear();
+  RELEASE_MUTEX_LOCK(self);
 
 }
+
 NAN_METHOD(CamScribbleWrap::GetSmallCanvas) {
 
 
@@ -668,33 +709,39 @@ NAN_METHOD(CamScribbleWrap::GetSmallCanvas) {
   }
 
 
-  // read a frame from the camera
-  self->camera.read(self->cameraImage);
+  ACQUIRE_MUTEX_LOCK(self);
+  {
+    // read a frame from the camera
+    self->camera.read(self->cameraImage);
 
-  self->canvas.getSmallCanvas(self->cameraImage, self->smallCanvasImage);
+    self->canvas.getSmallCanvas(self->cameraImage, self->smallCanvasImage);
 
 
-  cv::cvtColor(self->smallCanvasImage,self->smallCanvasImage,CV_BGR2RGB);
+    cv::cvtColor(self->smallCanvasImage,self->smallCanvasImage,CV_BGR2RGB);
 
 
-  if(info.Length() != 1) {
+    if(info.Length() != 1) {
 
-    Local<Object> toReturn =
-      Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+      Local<Object> toReturn =
+        Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
 
-    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
+      Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(toReturn);
+
+      img->mat = self->smallCanvasImage;
+
+      info.GetReturnValue().Set(toReturn);
+
+      RELEASE_MUTEX_LOCK(self);
+      return;
+    }
+
+    Local<Object> passed = info[0]->ToObject();
+    Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(passed);
 
     img->mat = self->smallCanvasImage;
 
-    info.GetReturnValue().Set(toReturn);
-
-    return;
+    info.GetReturnValue().Set(passed);
   }
+  RELEASE_MUTEX_LOCK(self);
 
-  Local<Object> passed = info[0]->ToObject();
-  Matrix *img = Nan::ObjectWrap::Unwrap<Matrix>(passed);
-
-  img->mat = self->smallCanvasImage;
-
-  info.GetReturnValue().Set(passed);
 }

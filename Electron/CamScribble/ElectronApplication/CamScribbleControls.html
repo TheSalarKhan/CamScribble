@@ -105,6 +105,7 @@
             <div class="row">
               <label>Ink Color: </label><br />
               <input
+                id="ink-color"
                 type="color"
                 value="#FFFFFF"/>
             </div><hr />
@@ -141,6 +142,8 @@
                   <i class="fa fa-save"></i>&nbsp;Export</a>
               </div>
               <div class="col-xs-6">
+                <a id='cs-lock' class="btn btn-primary control-buttons">
+                  <i class="fa fa-lock"></i>&nbsp;Lock</a>
                 <!-- <a class="btn btn-primary control-buttons">
                   <i class="fa fa-trash-o"></i>&nbsp;Clear</a> -->
               </div>
@@ -200,16 +203,14 @@ function setupTrackBars() {
   ];
 
   for(var i=0;i<sliderIds.length;i++) {
-    // With JQuery
     $(sliderIds[i].id).slider({
     	formatter: sliderIds[i].formatter
     });
   }
 }
 
+
 function setupButtons() {
-
-
   var buttons = [
     {
       id: '#cs-undo',
@@ -240,6 +241,12 @@ function setupButtons() {
       onClick: function() {
         ipcRenderer.send('cs-controls',{action:'export'});
       }
+    },
+    {
+      id: '#cs-lock',
+      onClick: function() {
+        ipcRenderer.send('cs-controls',{action:'lock'});
+      }
     }
   ];
 
@@ -248,9 +255,27 @@ function setupButtons() {
   }
 }
 
+
+function setupInkColorPicker() {
+  function hexToRgb(hex) {
+      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+      } : null;
+  }
+
+  $('#ink-color').on('input',function(){
+    var rgb = hexToRgb($(this).val());
+    ipcRenderer.send('cs-controls',{action:'color',val: rgb});
+  });
+}
+
 $(document).ready(function(){
   setupTrackBars();
   setupButtons();
+  setupInkColorPicker();
 });
 
 

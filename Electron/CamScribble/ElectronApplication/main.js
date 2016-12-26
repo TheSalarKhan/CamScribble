@@ -46,7 +46,7 @@ function startCamScribble() {
 
   function openControlWindow() {
     controlsWindow = new BrowserWindow({
-      width: 250,
+      width: 275,
       height: 550,
       titleBarStyle: 'hidden',
       resizable: false
@@ -64,6 +64,9 @@ function startCamScribble() {
         e.preventDefault();
       }
     });
+
+
+    //controlsWindow.webContents.openDevTools();
 
     controlsWindow.on('closed',() => {
         win = null;
@@ -104,9 +107,6 @@ function startCamScribble() {
   ipcMain.on('cs-controls', (event, arg) => {
     canvasWindow.webContents.send('cs-controls',arg);
   });
-
-
-
 }
 
 

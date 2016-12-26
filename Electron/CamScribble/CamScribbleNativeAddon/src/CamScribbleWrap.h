@@ -17,8 +17,11 @@ public:
   // condition variable and mutex
   // to make camera release and camera read
   // mutually exclusive events.
-  uv_cond_t cv;
   uv_mutex_t mutex;
+
+
+
+
 
 
   static bool isCameraValid(int camId) {

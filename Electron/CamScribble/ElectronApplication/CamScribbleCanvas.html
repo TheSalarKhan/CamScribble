@@ -100,6 +100,9 @@ function setupIPCControls(camScribble) {
         break;
       case 'erase':
         break;
+      case 'lock':
+        camScribble.lock();
+        break;
       case 'clear':
         camScribble.clearBigCanvas();
         break;
@@ -119,6 +122,10 @@ function setupIPCControls(camScribble) {
         break;
       case 'height':
         camScribble.setHeight(data.val);
+        break;
+      case 'color':
+        //ipcRenderer.send('debugging-logs',data.val);
+        camScribble.setInkColor(parseInt(data.val.r),parseInt(data.val.g),parseInt(data.val.b))
         break;
     }
   });
