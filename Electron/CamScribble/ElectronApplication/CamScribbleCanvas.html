@@ -30,6 +30,13 @@ const {ipcRenderer} = require('electron');
 var recorder = null;
 var recordChunk = [];
 
+var recording = false;
+var paused = false;
+
+function isPaused() {
+  return paused;
+}
+
 function stopRecording() {
   const { remote: { dialog } } = require('electron');
 
@@ -70,10 +77,15 @@ function startRecording() {
   // In the renderer process.
   const {desktopCapturer} = require('electron');
 
+
+  // Get the window stream.
   desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
-    if (error) throw error
+    if (error) throw error;
+
+
     for (let i = 0; i < sources.length; ++i) {
       if (sources[i].name === 'CamScribbleOutput') {
+
         navigator.webkitGetUserMedia({
           audio: false,
           video: {
@@ -86,11 +98,46 @@ function startRecording() {
               maxHeight: 600
             }
           }
-        }, handleStream, handleError)
-        return
+        }, handleStream, handleError);
+
+        return;
       }
     }
-  })
+
+
+
+  });
+
+
+  /*
+  function getAudioChannel(videoSourceId) {
+
+    MediaStreamTrack.getSources(function(sourceInfos) {
+
+      for (var i = 0; i != sourceInfos.length; ++i) {
+        //var sourceInfo = sourceInfos[i];
+        if (sourceInfos[i].kind === 'audio') {
+          sourceSelected(videoSourceId, sourceInfos[i].id);
+          return
+        }
+      }
+
+      //sourceSelected(audioSource, videoSource);
+    });
+  }
+
+  function sourceSelected(videoSourceId,audioSourceId) {
+    navigator.webkitGetUserMedia({
+      audio: {
+        optional: [{sourceId: audioSourceId}]
+      },
+      video: {
+        optional: [{sourceId: videoSourceId}]
+      }
+    }, handleStream, handleError);
+  }
+
+  */
 
   function handleStream (stream) {
     //document.querySelector('video').src = URL.createObjectURL(stream)
@@ -98,7 +145,7 @@ function startRecording() {
 
     // tell it to save data to an object when available
     recorder.ondataavailable = e => {
-                recordChunk.push(e.data);
+      recordChunk.push(e.data);
     };
 
     recorder.start();
@@ -110,15 +157,30 @@ function startRecording() {
   }
 }
 
-recording = false;
+
+
 function toggleRecording() {
   if(recording) {
     stopRecording();
   } else {
+    paused = false;
     startRecording();
   }
 
   recording = recording != true;
+}
+
+
+function togglePause() {
+  if(recorder != null) {
+    if(paused) {
+      recorder.resume();
+      paused = false;
+    } else {
+      recorder.pause();
+      paused = true;
+    }
+  }
 }
 
 function setupMouseDragOnCanvas(camScribble) {
@@ -223,6 +285,9 @@ function setupIPCControls(camScribble) {
         break;
       case 'toggle-record':
         toggleRecording();
+        break;
+      case 'toggle-pause':
+        togglePause();
         break;
     }
   });

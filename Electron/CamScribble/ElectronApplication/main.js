@@ -30,7 +30,7 @@ function openCalibrationWindow(onCloseCallback) {
   //calibrationWindow.webContents.openDevTools();
 
   calibrationWindow.on('close',() => {
-    // /console.log('opening application');
+
     onCloseCallback();
   });
 
@@ -47,9 +47,9 @@ function startCamScribble() {
   function openControlWindow() {
     controlsWindow = new BrowserWindow({
       width: 275,
-      height: 550,
+      height: 600,
       titleBarStyle: 'hidden',
-      resizable: true
+      resizable: false
     });
 
     controlsWindow.loadURL(`file://${__dirname}/CamScribbleControls.html`);
@@ -66,7 +66,7 @@ function startCamScribble() {
     });
 
 
-    controlsWindow.webContents.openDevTools();
+    //controlsWindow.webContents.openDevTools();
 
     controlsWindow.on('closed',() => {
         win = null;

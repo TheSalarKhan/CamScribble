@@ -155,10 +155,9 @@
                   <i class="fa fa-save"></i>&nbsp;<span id='record'>Record</span></a>
               </div>
               <div class="col-xs-6">
-                <!-- <a id='cs-lock' class="btn btn-primary control-buttons">
-                  <i class="fa fa-lock"></i>&nbsp;Stop</a>
-                <!- <a class="btn btn-primary control-buttons">
-                  <i class="fa fa-trash-o"></i>&nbsp;Clear</a> -> -->
+                <a id='cs-pause' class="btn btn-primary control-buttons" style='display:none'>
+                  <i id='pause-logo' class="fa fa-pause"></i>&nbsp;<span id='pause'>Pause</span>
+                </a>
               </div>
             </div>
 
@@ -267,12 +266,28 @@ function setupButtons() {
 
         if($('#record').text() == 'Record') {
           $('#record').html('Stop');
+          $('#cs-pause').css({display:''});
         } else {
           $('#record').html('Record');
+          $('#cs-pause').css({display:'none'});
+
         }
-        //ipcRenderer.send('debugging-logs',);
 
         ipcRenderer.send('cs-controls',{action:'toggle-record'});
+      }
+    },
+    {
+      id: '#cs-pause',
+      onClick: function() {
+        if($('#pause').text() == 'Pause') {
+          $('#pause').html('Resume');
+          $('#pause-logo').attr('class','fa fa-play');
+        } else {
+          $('#pause').html('Pause');
+          $('#pause-logo').attr('class','fa fa-pause');
+        }
+
+        ipcRenderer.send('cs-controls',{action: 'toggle-pause'});
       }
     }
   ];
