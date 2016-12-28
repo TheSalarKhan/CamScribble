@@ -149,6 +149,19 @@
               </div>
             </div>
 
+            <div class="row">
+              <div class="col-xs-6">
+                <a id='cs-record' class="btn btn-primary control-buttons">
+                  <i class="fa fa-save"></i>&nbsp;Toggle record</a>
+              </div>
+              <div class="col-xs-6">
+                <!-- <a id='cs-lock' class="btn btn-primary control-buttons">
+                  <i class="fa fa-lock"></i>&nbsp;Stop</a>
+                <!- <a class="btn btn-primary control-buttons">
+                  <i class="fa fa-trash-o"></i>&nbsp;Clear</a> -> -->
+              </div>
+            </div>
+
 
 
           </div>
@@ -246,6 +259,12 @@ function setupButtons() {
       id: '#cs-lock',
       onClick: function() {
         ipcRenderer.send('cs-controls',{action:'lock'});
+      }
+    },
+    {
+      id: '#cs-record',
+      onClick: function() {
+        ipcRenderer.send('cs-controls',{action:'toggle-record'});
       }
     }
   ];

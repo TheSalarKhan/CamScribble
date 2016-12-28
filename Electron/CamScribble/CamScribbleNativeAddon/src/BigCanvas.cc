@@ -77,8 +77,8 @@ inline void mergeIntoBGR(const Mat& r,const Mat& g,const Mat& b,Mat& output) {
 
 inline void getRoi(Rect& roi,const Point2f position,const Point2i bigCanvasSize,const Point2i smallCanvasSize) {
 
-	int positionx = position.x*(bigCanvasSize.x);
-	int positiony = position.y*(bigCanvasSize.y);
+	int positionx = position.x*(bigCanvasSize.x) - (smallCanvasSize.x/2);
+	int positiony = position.y*(bigCanvasSize.y) - (smallCanvasSize.y/2);
 
 	positionx =
 			(positionx < 0)? 0:
