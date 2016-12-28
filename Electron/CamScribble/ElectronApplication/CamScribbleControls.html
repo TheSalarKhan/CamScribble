@@ -152,7 +152,7 @@
             <div class="row">
               <div class="col-xs-6">
                 <a id='cs-record' class="btn btn-primary control-buttons">
-                  <i class="fa fa-save"></i>&nbsp;Toggle record</a>
+                  <i class="fa fa-save"></i>&nbsp;<span id='record'>Record</span></a>
               </div>
               <div class="col-xs-6">
                 <!-- <a id='cs-lock' class="btn btn-primary control-buttons">
@@ -264,6 +264,14 @@ function setupButtons() {
     {
       id: '#cs-record',
       onClick: function() {
+
+        if($('#record').text() == 'Record') {
+          $('#record').html('Stop');
+        } else {
+          $('#record').html('Record');
+        }
+        //ipcRenderer.send('debugging-logs',);
+
         ipcRenderer.send('cs-controls',{action:'toggle-record'});
       }
     }

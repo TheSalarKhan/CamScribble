@@ -49,7 +49,7 @@ function startCamScribble() {
       width: 275,
       height: 550,
       titleBarStyle: 'hidden',
-      resizable: false
+      resizable: true
     });
 
     controlsWindow.loadURL(`file://${__dirname}/CamScribbleControls.html`);
@@ -66,7 +66,7 @@ function startCamScribble() {
     });
 
 
-    //controlsWindow.webContents.openDevTools();
+    controlsWindow.webContents.openDevTools();
 
     controlsWindow.on('closed',() => {
         win = null;
