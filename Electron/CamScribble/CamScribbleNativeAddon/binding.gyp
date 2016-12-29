@@ -1,6 +1,6 @@
 {
-  "targets": [
-    {
+  "targets": [{
+
       "target_name": "cam_scribble",
       "sources": [
         "src/init.cc",
@@ -12,32 +12,78 @@
         "src/RunningAverage.cc",
         "src/Matrix.cc"
         ],
-	
-	"include_dirs": [
-		"/home/salar/OpenCV/opencv-3.1.0/output_lib/include",
-		"/usr/local/include",
-		"/usr/local/lib/node_modules/nan"
-      	],
-	
-	"link_settings": {
-		"libraries": [
-			"-lopencv_core",
-			"-lopencv_highgui",
-			"-lopencv_videoio",
-			"-lopencv_imgcodecs",
-			"-lopencv_video",
-		],
-		"ldflags": ["-L/home/salar/OpenCV/opencv-3.1.0/output_lib/lib"]
-	},
-	
-#"libraries": [
-#        "-lopencv_shape -lopencv_stitching -lopencv_objdetect -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d  -#lopencv_photo -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_viz -lopencv_core"
-#      ],
 
-      
+      "libraries": [
+        "<!@(node utils/find-opencv.js --libs)"
+      ],
+      # For windows
+
+      "include_dirs": [
+        "<!@(node utils/find-opencv.js --cflags)",
+        "<!(node -e \"require('nan')\")"
+      ],
 
       "cflags!" : [ "-fno-exceptions"],
-      "cflags_cc!": [ "-fno-rtti",  "-fno-exceptions"]
+      "cflags_cc!": [ "-fno-rtti",  "-fno-exceptions"],
+
+      "conditions": [
+        [ "OS==\"linux\" or OS==\"freebsd\" or OS==\"openbsd\" or OS==\"solaris\" or OS==\"aix\"", {
+            "cflags": [
+              "<!@(node utils/find-opencv.js --cflags)",
+              "-Wall"
+            ]
+        }],
+        [ "OS==\"win\"", {
+            "cflags": [
+              "-Wall"
+            ],
+            "defines": [
+                "WIN"
+            ],
+            "msvs_settings": {
+              "VCCLCompilerTool": {
+                "ExceptionHandling": "2",
+                "DisableSpecificWarnings": [ "4530", "4506", "4244" ],
+              },
+            }
+        }],
+        [ # cflags on OS X are stupid and have to be defined like this
+          "OS==\"mac\"", {
+            "xcode_settings": {
+              "OTHER_CFLAGS": [
+                "-mmacosx-version-min=10.7",
+                "-std=c++11",
+                "-stdlib=libc++",
+                "<!@(node utils/find-opencv.js --cflags)",
+              ],
+              "GCC_ENABLE_CPP_RTTI": "YES",
+              "GCC_ENABLE_CPP_EXCEPTIONS": "YES"
+            }
+          }
+        ]
+    ],
+
+    "configurations": {
+        # This is used for generating code coverage with the `--debug` argument
+        "Debug": {
+          "conditions": [
+            ['OS=="linux"', {
+              "cflags": ["-coverage"],
+              "ldflags": ["-coverage"]
+            }],
+            ['OS=="mac"', {
+              "xcode_settings": {
+                "OTHER_CFLAGS": [
+                  "-fprofile-arcs -ftest-coverage",
+                ],
+                "OTHER_LDFLAGS": [
+                  "--coverage"
+                ]
+              }
+            }]
+
+          ]
+        },
     }
-  ]
+  }]
 }
